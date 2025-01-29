@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Puzzle Fighter</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <script type="module">
+      import { Game } from './game.js';
+      import { Field } from './field.js';
+
+      const gameWidth = 6;
+      const gameHeight = 12;
+      const game = new Game(gameWidth, gameHeight);
+      const field = new Field(gameWidth, gameHeight, document.body);
+      field.render();
+    </script>
+  </body>
+</html>
