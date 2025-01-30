@@ -12,18 +12,18 @@ export class Game {
   exec(inst) {
     const [gemTypes, moves] = inst;
 
-    const gems = gemTypes.map((type, i) => {
-      return this._addGem(new Gem(type, { top: i, left: this.gemOffset }));
+    const gems = gemTypes.split('').map((type, i) => {
+      return this._addGem(new Gem(type, { top: i, left: this._gemOffset }));
     });
 
     const history = [this._copyField()];
 
-    moves.forEach((move) => {
+    moves.split('').forEach((move) => {
       this._handleMoveInst(gems, move);
       history.push(this._copyField());
     });
 
-    while (_tick()) {
+    while (this._tick()) {
       history.push(this._copyField());
     }
 
