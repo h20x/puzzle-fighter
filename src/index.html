@@ -29,8 +29,8 @@
 
       const commands = [
         ['BR', 'LLL'],
-        ['BR', 'LL'],
-        ['BR', 'R'],
+        ['RG', 'LL'],
+        ['RB', 'A'],
       ];
       let cp = 0;
 
@@ -92,19 +92,22 @@
 
       function nextCmd() {
         if (cp >= commands.length) {
-          return;
+          hp = history.length - 1;
+        } else {
+          hp = 0;
+          history = game.exec(commands[cp++]);
         }
 
-        hp = 0;
-        history = game.exec(commands[cp++]);
-        field.render(history[hp]);
+        if (history.length) {
+          field.render(history[hp]);
+        }
+
         renderCommands();
         updateControls();
       }
 
       function reset() {
-        cp = 0;
-        hp = 0;
+        cp = hp = 0;
         history = [];
         game = new Game(cols, rows);
         field.render();
