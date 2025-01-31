@@ -7,15 +7,130 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
+    <div class="container">
+      <div id="field"></div>
+      <ol id="commands" class="commands"></ol>
+      <div class="controls">
+        <button type="button" class="btn" id="prev-state">&lt;</button>
+        <button type="button" class="btn" id="next-state">&gt;</button>
+      </div>
+      <div class="controls">
+        <button type="button" class="btn" id="reset">&circlearrowleft;</button>
+        <button type="button" class="btn" id="next-cmd">&gt;</button>
+      </div>
+    </div>
+
     <script type="module">
       import { Game } from './game.js';
       import { Field } from './field.js';
 
-      const gameWidth = 6;
-      const gameHeight = 12;
-      const game = new Game(gameWidth, gameHeight);
-      const field = new Field(gameWidth, gameHeight, document.body);
+      const cols = 6;
+      const rows = 12;
+
+      const commands = [
+        ['BR', 'LLL'],
+        ['BR', 'LL'],
+        ['BR', 'R'],
+      ];
+      let cp = 0;
+
+      let history = [];
+      let hp = 0;
+
+      const btnPrevState = document.getElementById('prev-state');
+      const btnNextState = document.getElementById('next-state');
+      const btnNextCmd = document.getElementById('next-cmd');
+      const btnReset = document.getElementById('reset');
+      const commandList = document.getElementById('commands');
+
+      btnPrevState.addEventListener('click', prevState);
+      btnNextState.addEventListener('click', nextState);
+      btnNextCmd.addEventListener('click', nextCmd);
+      btnReset.addEventListener('click', reset);
+
+      document.addEventListener('keydown', (e) => {
+        switch (e.code) {
+          case 'ArrowLeft':
+            return prevState();
+
+          case 'ArrowRight':
+            return nextState();
+
+          case 'ArrowDown':
+            return nextCmd();
+
+          case 'Space':
+            return reset();
+        }
+      });
+
+      let game = new Game(cols, rows);
+      const field = new Field(cols, rows, document.getElementById('field'));
+
       field.render();
+      renderCommands();
+      updateControls();
+
+      function updateControls() {
+        btnPrevState.disabled = hp <= 0;
+        btnNextState.disabled = hp >= history.length - 1;
+        btnNextCmd.disabled = cp >= commands.length;
+      }
+
+      function renderCommands() {
+        commandList.innerHTML = '';
+        let html = '';
+
+        for (let i = 0; i < commands.length; ++i) {
+          const cls = i === cp ? 'active' : '';
+          html += `<li class="${cls}">${commands[i].toString()}</li>`;
+        }
+
+        html += `<li class="${cp >= commands.length ? 'active' : ''}">END</li>`;
+        commandList.innerHTML = html;
+      }
+
+      function nextCmd() {
+        if (cp >= commands.length) {
+          return;
+        }
+
+        hp = 0;
+        history = game.exec(commands[cp++]);
+        field.render(history[hp]);
+        renderCommands();
+        updateControls();
+      }
+
+      function reset() {
+        cp = 0;
+        hp = 0;
+        history = [];
+        game = new Game(cols, rows);
+        field.render();
+        renderCommands();
+        updateControls();
+      }
+
+      function nextState() {
+        if (hp >= history.length - 1) {
+          return;
+        }
+
+        hp = Math.min(++hp, history.length - 1);
+        field.render(history[hp]);
+        updateControls();
+      }
+
+      function prevState() {
+        if (hp <= 0) {
+          return;
+        }
+
+        hp = Math.max(--hp, 0);
+        field.render(history[hp]);
+        updateControls();
+      }
     </script>
   </body>
 </html>
