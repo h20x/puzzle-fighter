@@ -1,11 +1,11 @@
 import { Gem } from './gem.js';
 
 export class Game {
-  constructor(width, height, gemOffset = 3) {
-    this._width = width;
-    this._height = height;
+  constructor(cols, rows, gemOffset = 3) {
+    this._cols = cols;
+    this._rows = rows;
     this._gemOffset = gemOffset;
-    this._field = new Array(width * height).fill(null);
+    this._field = new Array(cols * rows).fill(null);
     this._gems = [];
   }
 
@@ -31,11 +31,29 @@ export class Game {
   }
 
   _tick() {
-    return false;
+    let isUnstable = false;
+
+    for (let r = this._rows - 1; r >= 0; --r) {
+      for (let c = this._cols - 1; c >= 0; --c) {
+        const i = this._calcIndex(r, c);
+
+        if (this._field[i]) {
+          const i1 = this._calcIndex(r + 1, c);
+
+          if (i1 >= 0 && this._field[i1] == null) {
+            isUnstable = true;
+            this._field[i1] = this._field[i];
+            this._field[i] = null;
+          }
+        }
+      }
+    }
+
+    return isUnstable;
   }
 
   _addGem(gem) {
-    const index = this._calcIndex(gem.pos());
+    const index = this._posToIndex(gem.pos());
     this._field[index] = gem;
     this._gems.push(gem);
 
@@ -50,7 +68,7 @@ export class Game {
 
   _handleMoveInst(gems, move) {
     gems.forEach((gem, i) => {
-      const oldIndex = this._calcIndex(gem.pos());
+      const oldIndex = this._posToIndex(gem.pos());
       this._field[oldIndex] = null;
 
       if ('L' === move) {
@@ -65,12 +83,18 @@ export class Game {
         gem.incTop(-1);
       }
 
-      const newIndex = this._calcIndex(gem.pos());
+      const newIndex = this._posToIndex(gem.pos());
       this._field[newIndex] = gem;
     });
   }
 
-  _calcIndex({ top, left }) {
-    return this._width * top + left;
+  _posToIndex({ top, left }) {
+    return this._calcIndex(top, left);
+  }
+
+  _calcIndex(row, col) {
+    const idx = this._cols * row + col;
+
+    return idx < 0 || idx >= this._field.length ? -1 : idx;
   }
 }
