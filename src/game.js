@@ -1,5 +1,7 @@
 import { Gem } from './gem.js';
 
+const gemTypes = new Set(['R', 'G', 'B']);
+
 export class Game {
   constructor(cols, rows, gemOffset = 3) {
     this._cols = cols;
@@ -10,17 +12,25 @@ export class Game {
   }
 
   exec(inst) {
-    const [gemTypes, moves] = inst;
+    const [types, moves] = inst;
 
-    const gems = gemTypes.split('').map((type, i) => {
+    const gems = types.split('').map((type, i) => {
+      if (!gemTypes.has(type)) {
+        console.error(`Instruction: ${inst}. Bad gem type: ${type}`);
+      }
+
       return this._addGem(new Gem(type, { top: i, left: this._gemOffset }));
     });
 
     const history = [this._copyField()];
 
     moves.split('').forEach((move) => {
-      this._handleMoveInst(gems, move);
-      history.push(this._copyField());
+      try {
+        this._handleMoveInst(gems, move);
+        history.push(this._copyField());
+      } catch (err) {
+        console.error(`Instruction: ${inst}. ${err.message}`);
+      }
     });
 
     while (this._tick()) {
@@ -82,21 +92,36 @@ export class Game {
   _handleMoveInst(gems, move) {
     gems.forEach((gem, i) => {
       const oldIndex = this._posToIndex(gem.pos());
-      this._field[oldIndex] = null;
 
-      if ('L' === move) {
-        gem.incLeft(-1);
-      } else if ('R' === move) {
-        gem.incLeft(1);
-      } else if ('A' === move && i > 0) {
-        gem.incLeft(1);
-        gem.incTop(-1);
-      } else if ('B' === move && i > 0) {
-        gem.incLeft(-1);
-        gem.incTop(-1);
+      switch (move) {
+        case 'L':
+          gem.incLeft(-1);
+          break;
+
+        case 'R':
+          gem.incLeft(1);
+          break;
+
+        case 'A':
+          if (i > 0) {
+            gem.incLeft(1);
+            gem.incTop(-1);
+          }
+          break;
+
+        case 'B':
+          if (i > 0) {
+            gem.incLeft(-1);
+            gem.incTop(-1);
+          }
+          break;
+
+        default:
+          throw new Error(`Bad move: ${move}`);
       }
 
       const newIndex = this._posToIndex(gem.pos());
+      this._field[oldIndex] = null;
       this._field[newIndex] = gem;
     });
   }
