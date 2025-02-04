@@ -9,7 +9,7 @@
   <body>
     <div class="container">
       <div id="field"></div>
-      <ol id="commands" class="commands"></ol>
+      <textarea id="commands" class="commands"></textarea>
       <div class="controls">
         <button type="button" class="btn" id="prev-state">&lt;</button>
         <button type="button" class="btn" id="next-state">&gt;</button>
@@ -27,11 +27,7 @@
       const cols = 6;
       const rows = 12;
 
-      const commands = [
-        ['BR', 'LLL'],
-        ['RG', 'LL'],
-        ['RB', 'A'],
-      ];
+      const commands = restoreCommands();
       let cp = 0;
 
       let history = [];
@@ -49,17 +45,25 @@
       btnReset.addEventListener('click', reset);
 
       document.addEventListener('keydown', (e) => {
+        if (e.target === commandList) {
+          return;
+        }
+
         switch (e.code) {
           case 'ArrowLeft':
+          case 'ArrowUp':
+          case 'KeyQ':
             return prevState();
 
           case 'ArrowRight':
+          case 'ArrowDown':
+          case 'KeyW':
             return nextState();
 
-          case 'ArrowDown':
+          case 'KeyE':
             return nextCmd();
 
-          case 'Space':
+          case 'KeyR':
             return reset();
         }
       });
@@ -68,26 +72,15 @@
       const field = new Field(cols, rows, document.getElementById('field'));
 
       field.render();
-      renderCommands();
-      updateControls();
+      nextCmd();
 
-      function updateControls() {
-        btnPrevState.disabled = hp <= 0;
-        btnNextState.disabled = hp >= history.length - 1;
-        btnNextCmd.disabled = cp >= commands.length;
-      }
-
-      function renderCommands() {
-        commandList.innerHTML = '';
-        let html = '';
-
-        for (let i = 0; i < commands.length; ++i) {
-          const cls = i === cp ? 'active' : '';
-          html += `<li class="${cls}">${commands[i].toString()}</li>`;
-        }
-
-        html += `<li class="${cp >= commands.length ? 'active' : ''}">END</li>`;
-        commandList.innerHTML = html;
+      function reset() {
+        cp = hp = 0;
+        history = [];
+        game = new Game(cols, rows);
+        parseCommands();
+        saveCommands();
+        nextCmd();
       }
 
       function nextCmd() {
@@ -102,17 +95,44 @@
           field.render(history[hp]);
         }
 
-        renderCommands();
+        updateCommandList();
         updateControls();
       }
 
-      function reset() {
-        cp = hp = 0;
-        history = [];
-        game = new Game(cols, rows);
-        field.render();
-        renderCommands();
-        updateControls();
+      function updateControls() {
+        btnPrevState.disabled = hp <= 0;
+        btnNextState.disabled = hp >= history.length - 1;
+        btnNextCmd.disabled = cp >= commands.length;
+      }
+
+      function updateCommandList() {
+        commandList.value = commands.reduce((acc, cur, i) => {
+          return acc + (i === cp - 1 ? '> ' : '  ') + cur.join(', ') + '\n';
+        }, '');
+      }
+
+      function parseCommands() {
+        commands.length = 0;
+        commandList.value
+          .trim()
+          .split('\n')
+          .filter(Boolean)
+          .forEach((str) => {
+            str = str.replace(/(\s|>)/g, '');
+            const c = str.split(',');
+            c[1] = c[1].toUpperCase();
+            commands.push(c);
+          });
+      }
+
+      function saveCommands() {
+        localStorage.setItem('commands', JSON.stringify(commands));
+      }
+
+      function restoreCommands() {
+        const commands = localStorage.getItem('commands');
+
+        return commands ? JSON.parse(commands) : [];
       }
 
       function nextState() {

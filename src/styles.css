@@ -32,10 +32,9 @@ body {
   overflow: auto;
   font-weight: 700;
   margin: 0;
-}
-
-.commands .active {
-  color: #c00;
+  resize: none;
+  font-size: 14px;
+  white-space: nowrap;
 }
 
 .btn {
