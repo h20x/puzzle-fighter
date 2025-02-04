@@ -18,8 +18,10 @@ describe('Game', () => {
       ['BR', 'LLL'],
       ['RG', 'LL'],
       ['RB', 'A'],
+      ['BG', 'LB'],
+      ['GG', 'RR'],
     ].forEach((inst) => game.exec(inst));
 
-    expect(game.getStateStr()).toBe(createStateStr(['BR', 'RG RB']));
+    expect(game.getStateStr()).toBe(createStateStr([' G', 'BR   G', 'RGBRBG']));
   });
 });
