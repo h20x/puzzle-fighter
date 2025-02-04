@@ -30,6 +30,23 @@ export class Game {
     return history;
   }
 
+  getStateStr() {
+    const state = [];
+
+    for (let i = 0; i < this._field.length; ) {
+      let str = '';
+
+      for (let c = 0; c < this._cols; ++c, ++i) {
+        const item = this._field[i];
+        str += item ? item.type() : ' ';
+      }
+
+      state.push(str);
+    }
+
+    return state.join('\n');
+  }
+
   _tick() {
     let isUnstable = false;
 
