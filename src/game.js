@@ -50,18 +50,14 @@ export class Game {
   _tick() {
     let isUnstable = false;
 
-    for (let r = this._rows - 1; r >= 0; --r) {
-      for (let c = this._cols - 1; c >= 0; --c) {
-        const i = this._calcIndex(r, c);
+    for (let i = this._field.length - 1; i >= 0; --i) {
+      if (this._field[i]) {
+        const i1 = i + this._cols;
 
-        if (this._field[i]) {
-          const i1 = this._calcIndex(r + 1, c);
-
-          if (i1 >= 0 && this._field[i1] == null) {
-            isUnstable = true;
-            this._field[i1] = this._field[i];
-            this._field[i] = null;
-          }
+        if (i1 < this._field.length && this._field[i1] == null) {
+          isUnstable = true;
+          this._field[i1] = this._field[i];
+          this._field[i] = null;
         }
       }
     }
@@ -106,12 +102,6 @@ export class Game {
   }
 
   _posToIndex({ top, left }) {
-    return this._calcIndex(top, left);
-  }
-
-  _calcIndex(row, col) {
-    const idx = this._cols * row + col;
-
-    return idx < 0 || idx >= this._field.length ? -1 : idx;
+    return this._cols * top + left;
   }
 }
