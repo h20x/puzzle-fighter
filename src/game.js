@@ -19,7 +19,7 @@ export class Game {
         console.error(`Instruction: ${inst}. Bad gem type: ${type}`);
       }
 
-      return this._addGem(new Gem(type, { top: i, left: this._gemOffset }));
+      return this._addGem(new Gem(type, this._cols * i + this._gemOffset));
     });
 
     const history = [this._copyField()];
@@ -33,7 +33,7 @@ export class Game {
       }
     });
 
-    while (this._tick()) {
+    while (this._tick(gems)) {
       history.push(this._copyField());
     }
 
@@ -57,30 +57,65 @@ export class Game {
     return state.join('\n');
   }
 
-  _tick() {
+  _tick(gems) {
     let isUnstable = false;
 
-    for (let i = this._field.length - 1; i >= 0; --i) {
-      if (this._field[i]) {
-        const i1 = i + this._cols;
-
-        if (i1 < this._field.length && this._field[i1] == null) {
-          isUnstable = true;
-          this._field[i1] = this._field[i];
-          this._field[i] = null;
-        }
-      }
+    for (let n = gems.length - 1; n >= 0; --n) {
+      isUnstable = this._moveGem(gems[n], 'D');
     }
 
     return isUnstable;
   }
 
   _addGem(gem) {
-    const index = this._posToIndex(gem.pos());
-    this._field[index] = gem;
+    this._field[gem.pos()] = gem;
     this._gems.push(gem);
 
     return gem;
+  }
+
+  _moveGem(gem, cmd) {
+    const cur = gem.pos();
+    let next;
+
+    switch (cmd) {
+      case 'L':
+        next = cur - 1;
+        break;
+
+      case 'R':
+        next = cur + 1;
+        break;
+
+      case 'A':
+        next = cur - this._cols + 1;
+        break;
+
+      case 'B':
+        next = cur - this._cols - 1;
+        break;
+
+      case 'D':
+        next = cur + this._cols;
+        break;
+
+      default:
+        return false;
+    }
+
+    if (this._isEmptyCell(next)) {
+      gem.setPos(next);
+      this._field[next] = this._field[cur];
+      this._field[cur] = null;
+
+      return true;
+    }
+
+    return false;
+  }
+
+  _isEmptyCell(i) {
+    return i >= 0 && i < this._field.length && this._field[i] == null;
   }
 
   _copyField() {
@@ -89,44 +124,24 @@ export class Game {
     });
   }
 
-  _handleMoveInst(gems, move) {
+  _handleMoveInst(gems, cmd) {
     gems.forEach((gem, i) => {
-      const oldIndex = this._posToIndex(gem.pos());
-
-      switch (move) {
+      switch (cmd) {
         case 'L':
-          gem.incLeft(-1);
-          break;
-
         case 'R':
-          gem.incLeft(1);
+          this._moveGem(gem, cmd);
           break;
 
         case 'A':
-          if (i > 0) {
-            gem.incLeft(1);
-            gem.incTop(-1);
-          }
-          break;
-
         case 'B':
           if (i > 0) {
-            gem.incLeft(-1);
-            gem.incTop(-1);
+            this._moveGem(gem, cmd);
           }
           break;
 
         default:
-          throw new Error(`Bad move: ${move}`);
+          throw new Error(`Bad move: ${cmd}`);
       }
-
-      const newIndex = this._posToIndex(gem.pos());
-      this._field[oldIndex] = null;
-      this._field[newIndex] = gem;
     });
-  }
-
-  _posToIndex({ top, left }) {
-    return this._cols * top + left;
   }
 }

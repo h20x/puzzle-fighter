@@ -9,15 +9,11 @@ export class Gem {
   }
 
   pos() {
-    return { ...this._pos };
+    return this._pos;
   }
 
-  incLeft(val) {
-    this._pos.left += val;
-  }
-
-  incTop(val) {
-    this._pos.top += val;
+  setPos(val) {
+    this._pos = val;
   }
 
   clone() {
