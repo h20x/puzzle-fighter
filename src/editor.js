@@ -96,9 +96,26 @@ function parseCommands() {
     .filter(Boolean)
     .forEach((str) => {
       str = str.replace(/(\s|>)/g, '');
-      const c = str.split(',');
-      c[1] = c[1].toUpperCase();
-      commands.push(c);
+      const c = str.split(',', 2);
+
+      if (c.length < 2) {
+        return;
+      }
+
+      let [gems, moves] = c;
+
+      gems = gems
+        .replace(/[^RGB]/g, 'R')
+        .slice(0, 2)
+        .padEnd(2, 'R');
+
+      moves = moves.replace(/[^LRAB]/g, '').toUpperCase();
+
+      if (!moves.length) {
+        return;
+      }
+
+      commands.push([gems, moves]);
     });
 }
 
