@@ -6,7 +6,7 @@ export class Field {
     this._field = null;
   }
 
-  render(state) {
+  render(gems) {
     if (!this._field) {
       this._field = document.createElement('div');
       this._field.classList.add('field');
@@ -15,27 +15,41 @@ export class Field {
       this._parent.append(this._field);
     }
 
-    this._field.innerHTML = this._createHTML(state);
+    this._field.innerHTML = this._createHTML(gems);
   }
 
-  _createHTML(state) {
-    const len = this._cols * this._rows;
+  _createHTML(gems = []) {
     let html = '';
 
-    for (let i = 0; i < len; ++i) {
-      if (state && state[i]) {
-        html += `<div class="cell">${this._createGem(state[i].type())}</div>`;
-      } else {
-        html += `<div class="cell"></div>`;
+    html += `<div class="vlines">
+    ${'<div class="line"></div>'.repeat(this._cols - 1)}
+    </div>`;
+
+    html += `<div class="hlines">
+    ${'<div class="line"></div>'.repeat(this._rows - 1)}
+    </div>`;
+
+    const pgems = new Set();
+
+    gems.forEach((gem) => {
+      const pgem = gem.parent();
+
+      if (pgem && !pgems.has(pgem)) {
+        pgems.add(pgem);
+        html += this._createGem(pgem);
       }
-    }
+
+      if (!pgem) {
+        html += this._createGem(gem);
+      }
+    });
 
     return html;
   }
 
-  _createGem(type) {
-    const cls = ['gem'];
-    cls.push(type.toLowerCase());
+  _createGem(gem) {
+    const type = gem.type();
+    const cls = ['gem', type.toLowerCase()];
 
     if (type === 'r' || type === 'g' || type === 'b') {
       cls.push('crash');
@@ -43,6 +57,16 @@ export class Field {
       cls.push('simple');
     }
 
-    return `<div class="${cls.join(' ')}"></div>`;
+    const col = gem.pos() % this._cols;
+    const row = (gem.pos() / this._cols) | 0;
+    const clsStr = cls.join(' ');
+    const style = [
+      `--col: ${String(col)}`,
+      `--row: ${String(row)}`,
+      `--width: ${String(gem.width())}`,
+      `--height: ${String(gem.height())}`,
+    ].join('; ');
+
+    return `<div class="${clsStr}" style="${style}"></div>`;
   }
 }
