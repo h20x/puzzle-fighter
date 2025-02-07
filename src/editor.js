@@ -105,7 +105,7 @@ function parseCommands() {
       let [gems, moves] = c;
 
       gems = gems
-        .replace(/[^RGB]/g, 'R')
+        .replace(/[^RGB]/gi, 'R')
         .slice(0, 2)
         .padEnd(2, 'R');
 

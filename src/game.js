@@ -1,6 +1,6 @@
 import { Gem, PowerGem } from './gem.js';
 
-const gemTypes = new Set(['R', 'G', 'B']);
+const gemTypes = new Set(['R', 'G', 'B', 'r', 'g', 'b']);
 
 export class Game {
   constructor(cols, rows, gemOffset = 3) {
@@ -37,8 +37,47 @@ export class Game {
       history.push(this._copyGems());
     }
 
-    this._findPowerGems();
-    history.push(this._copyGems());
+    this._gems.sort((a, b) => a.pos() - b.pos());
+
+    for (let i = 0; i < this._gems.length; ++i) {
+      const gem = this._gems[i];
+
+      if (gem.isCrash()) {
+        const gemsToDestroy = this._findConnectedGems(gem);
+
+        if (!gemsToDestroy.size) {
+          continue;
+        }
+
+        gemsToDestroy.add(gem);
+
+        this._gems = this._gems.filter((g) => {
+          if (gemsToDestroy.has(g)) {
+            this._field[g.pos()] = null;
+
+            return false;
+          }
+
+          return true;
+        });
+
+        history.push(this._copyGems());
+
+        while (this._tick(this._gems)) {
+          history.push(this._copyGems());
+        }
+
+        this._gems.sort((a, b) => a.pos() - b.pos());
+        i = -1;
+      }
+
+      if (gem.isCrash() && gem.isSimple()) {
+        console.log('simple-crash');
+      }
+      if (gem.isSimple() && this._formPowerGem(gem)) {
+        history.push(this._copyGems());
+      }
+    }
 
     return history;
   }
@@ -60,27 +99,50 @@ export class Game {
     return state.join('\n');
   }
 
-  _findPowerGems() {
-    for (let i = 0; i < this._field.length; ++i) {
-      const gem = this._at(i);
+  _findConnectedGems(gem, foundGems = new Set()) {
+    if (foundGems.has(gem)) {
+      return foundGems;
+    }
 
-      if (gem && !gem.parent()) {
-        const gems = [
-          gem,
-          this._at(i + 1),
-          this._at(i + this._cols),
-          this._at(i + this._cols + 1),
-        ];
-        const isEqual = gems.every((g) => gem.isEqual(g));
+    foundGems.add(gem);
 
-        if (isEqual) {
-          const powerGem = new PowerGem(this._cols, gems);
-          gems.forEach((gem) => gem.setParent(powerGem));
-          this._expandRight(powerGem);
-          this._expandBottom(powerGem);
-        }
+    const gems = [
+      this._at(gem.pos() - 1),
+      this._at(gem.pos() + 1),
+      this._at(gem.pos() - this._cols),
+      this._at(gem.pos() + this._cols),
+    ];
+
+    for (const g of gems) {
+      if (g && g.color() === gem.color()) {
+        this._findConnectedGems(g, foundGems);
       }
     }
+
+    return foundGems;
+  }
+
+  _formPowerGem(gem) {
+    const gems = [
+      gem,
+      this._at(gem.pos() + 1),
+      this._at(gem.pos() + this._cols),
+      this._at(gem.pos() + this._cols + 1),
+    ];
+    const isEqual = gems.every(
+      (g) => g && g.isSimple() && g.color() === gem.color()
+    );
+
+    if (isEqual) {
+      const powerGem = new PowerGem(this._cols, gems);
+      gems.forEach((gem) => gem.setParent(powerGem));
+      this._expandRight(powerGem);
+      this._expandBottom(powerGem);
+
+      return true;
+    }
+
+    return false;
   }
 
   _expandRight(pgem) {

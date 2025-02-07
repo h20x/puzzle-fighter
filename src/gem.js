@@ -5,6 +5,10 @@ export class Gem {
     this._parent = null;
   }
 
+  color() {
+    return this._type.toLowerCase();
+  }
+
   type() {
     return this._type;
   }
@@ -39,6 +43,14 @@ export class Gem {
 
   isEqual(gem) {
     return gem && this._type == gem.type();
+  }
+
+  isCrash() {
+    return 'rgb'.indexOf(this._type) >= 0;
+  }
+
+  isSimple() {
+    return !this.parent() && !this.isCrash();
   }
 }
 

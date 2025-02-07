@@ -28,4 +28,21 @@ describe('Game', () => {
       createStateStr(['   B', ' G R', 'RR BBG', 'RRBRBG'])
     );
   });
+
+  it('should handle crash gems', () => {
+    const game = new Game(ncols, nrows);
+
+    [
+      ['BB', 'BLL'],
+      ['RR', 'B'],
+      ['GG', 'BLL'],
+      ['RG', 'B'],
+      ['RG', 'BLL'],
+      ['GG', 'LLL'],
+      ['RR', 'L'],
+      ['Rg', 'LL'],
+    ].forEach((inst) => game.exec(inst));
+
+    expect(game.getStateStr()).toBe(createStateStr([' RR', ' RRR', 'BBRR']));
+  });
 });
