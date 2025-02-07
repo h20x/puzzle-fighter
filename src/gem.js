@@ -103,8 +103,8 @@ export class PowerGem {
 
   _updateProps() {
     this._gems.sort((a, b) => a.pos() - b.pos());
-    const colStart = this._gems.at(0).pos() % this._fieldWidth;
-    const colEnd = this._gems.at(-1).pos() % this._fieldWidth;
+    const colStart = this._gems[0].pos() % this._fieldWidth;
+    const colEnd = this._gems[this._gems.length - 1].pos() % this._fieldWidth;
     this._width = colEnd - colStart + 1;
     this._height = this._gems.length / this._width;
   }

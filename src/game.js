@@ -111,7 +111,7 @@ export class Game {
     let isUnstable = false;
 
     for (let n = gems.length - 1; n >= 0; --n) {
-      isUnstable = this._moveGem(gems[n], 'D');
+      isUnstable = this._moveDown(gems[n]) || isUnstable;
     }
 
     return isUnstable;
@@ -124,39 +124,39 @@ export class Game {
     return gem;
   }
 
-  _moveGem(gem, cmd) {
-    const cur = gem.pos();
-    let next;
+  _moveLeft(gem) {
+    return this._setPos(gem, gem.pos() - 1);
+  }
 
-    switch (cmd) {
-      case 'L':
-        next = cur - 1;
-        break;
+  _moveRight(gem) {
+    return this._setPos(gem, gem.pos() + 1);
+  }
 
-      case 'R':
-        next = cur + 1;
-        break;
+  _moveDown(gem) {
+    return this._setPos(gem, gem.pos() + this._cols);
+  }
 
-      case 'A':
-        next = cur - this._cols + 1;
-        break;
-
-      case 'B':
-        next = cur - this._cols - 1;
-        break;
-
-      case 'D':
-        next = cur + this._cols;
-        break;
-
-      default:
-        return false;
+  _rotateCW(gem, point) {
+    if (gem.pos() - point === 1) {
+      return this._setPos(gem, gem.pos() + this._cols - 1);
     }
 
-    if (this._isEmptyCell(next)) {
-      gem.setPos(next);
-      this._field[next] = this._field[cur];
-      this._field[cur] = null;
+    return this._setPos(gem, gem.pos() - this._cols - 1);
+  }
+
+  _rotateACW(gem, point) {
+    if (gem.pos() - point === -1) {
+      return this._setPos(gem, gem.pos() + this._cols + 1);
+    }
+
+    return this._setPos(gem, gem.pos() - this._cols + 1);
+  }
+
+  _setPos(gem, pos) {
+    if (this._isEmptyCell(pos)) {
+      this._field[pos] = gem;
+      this._field[gem.pos()] = null;
+      gem.setPos(pos);
 
       return true;
     }
@@ -199,24 +199,32 @@ export class Game {
     return gems;
   }
 
-  _handleMoveInst(gems, cmd) {
-    gems.forEach((gem, i) => {
-      switch (cmd) {
-        case 'L':
-        case 'R':
-          this._moveGem(gem, cmd);
-          break;
+  _handleMoveInst(pair, cmd) {
+    switch (cmd) {
+      case 'L':
+        pair
+          .slice()
+          .sort((a, b) => a.pos() - b.pos())
+          .forEach((gem) => this._moveLeft(gem));
+        break;
 
-        case 'A':
-        case 'B':
-          if (i > 0) {
-            this._moveGem(gem, cmd);
-          }
-          break;
+      case 'R':
+        pair
+          .slice()
+          .sort((a, b) => b.pos() - a.pos())
+          .forEach((gem) => this._moveRight(gem));
+        break;
 
-        default:
-          throw new Error(`Bad move: ${cmd}`);
-      }
-    });
+      case 'A':
+        this._rotateACW(pair[1], pair[0].pos());
+        break;
+
+      case 'B':
+        this._rotateCW(pair[1], pair[0].pos());
+        break;
+
+      default:
+        throw new Error(`Bad move: ${cmd}`);
+    }
   }
 }
