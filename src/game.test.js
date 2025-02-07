@@ -15,13 +15,17 @@ describe('Game', () => {
     const game = new Game(ncols, nrows);
 
     [
-      ['BR', 'LLL'],
-      ['RG', 'LL'],
+      ['BR', 'ABBABAAB'],
+      ['RR', 'LLL'],
+      ['RR', 'LL'],
       ['RB', 'A'],
       ['BG', 'LB'],
       ['GG', 'RR'],
+      ['BB', 'BLLRRR'],
     ].forEach((inst) => game.exec(inst));
 
-    expect(game.getStateStr()).toBe(createStateStr([' G', 'BR   G', 'RGBRBG']));
+    expect(game.getStateStr()).toBe(
+      createStateStr(['   B', ' G R', 'RR BBG', 'RRBRBG'])
+    );
   });
 });
