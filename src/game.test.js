@@ -11,8 +11,12 @@ describe('Game', () => {
     return state.join('\n');
   }
 
+  function createGame() {
+    return new Game(ncols, nrows);
+  }
+
   it('should handle simple gems', () => {
-    const game = new Game(ncols, nrows);
+    const game = createGame();
 
     [
       ['BR', 'ABBABAAB'],
@@ -29,20 +33,42 @@ describe('Game', () => {
     );
   });
 
-  it('should handle crash gems', () => {
-    const game = new Game(ncols, nrows);
-
+  it('should handle crash gems and form power gems', () => {
     [
-      ['BB', 'BLL'],
-      ['RR', 'B'],
-      ['GG', 'BLL'],
-      ['RG', 'B'],
-      ['RG', 'BLL'],
-      ['GG', 'LLL'],
-      ['RR', 'L'],
-      ['Rg', 'LL'],
-    ].forEach((inst) => game.exec(inst));
+      [
+        [
+          ['BB', 'BLL'],
+          ['RR', 'B'],
+          ['GG', 'BLL'],
+          ['RG', 'B'],
+          ['RG', 'BLL'],
+          ['GG', 'LLL'],
+          ['RR', 'L'],
+          ['Rg', 'LL'],
+        ],
+        [' RR', ' RRR', 'BBRR'],
+        [[55, '2x2']],
+      ],
+      [
+        [
+          ['BR', 'ALLL'],
+          ['RR', 'AL'],
+          ['GG', 'ALLL'],
+          ['GR', 'AL'],
+          ['GR', 'ALLL'],
+          ['GG', 'LLL'],
+          ['RR', 'L'],
+          ['Rg', 'LL'],
+        ],
+        [' RR', ' RRR', 'BRRR'],
+        [[55, '2x3']],
+      ],
+    ].forEach(([instuctions, state, pgems]) => {
+      const game = createGame();
+      instuctions.forEach((inst) => game.exec(inst));
 
-    expect(game.getStateStr()).toBe(createStateStr([' RR', ' RRR', 'BBRR']));
+      expect(game.getStateStr()).toBe(createStateStr(state));
+      expect(game.getPowerGems()).toEqual(pgems);
+    });
   });
 });

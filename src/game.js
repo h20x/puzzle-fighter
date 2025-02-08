@@ -39,6 +39,20 @@ export class Game {
     return state.join('\n');
   }
 
+  getPowerGems() {
+    const map = new Map();
+
+    for (const gem of this._gems) {
+      const parent = gem.parent();
+
+      if (parent) {
+        map.set(parent.pos(), `${parent.width()}x${parent.height()}`);
+      }
+    }
+
+    return [...map];
+  }
+
   _createGems(inst) {
     const [types] = inst;
     const gems = types.split('').map((type, i) => {
