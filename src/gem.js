@@ -101,11 +101,15 @@ export class PowerGem {
       return false;
     }
 
-    if (!this._gems.every((gem) => this._canConsume(gem))) {
+    if (!gems.every((gem) => this._canConsume(gem))) {
       return false;
     }
 
-    this._gems.push(...gems);
+    for (let gem of gems) {
+      gem.setParent(this);
+      this._gems.push(gem);
+    }
+
     this._updateProps();
 
     return true;

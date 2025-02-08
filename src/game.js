@@ -267,7 +267,7 @@ export class Game {
       gems.length = 0;
 
       for (let i = 0; i < pgem.width(); ++i) {
-        gems.push(this._at(pgem.pos() + pgem.height() + i));
+        gems.push(this._at(pgem.pos() + this._cols * pgem.height() + i));
       }
     } while (pgem.expand('V', gems));
   }
