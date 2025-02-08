@@ -9,77 +9,17 @@ export class Game {
     this._gemOffset = gemOffset;
     this._field = new Array(cols * rows).fill(null);
     this._gems = [];
+    this._history = [];
   }
 
   exec(inst) {
-    const [types, moves] = inst;
+    this._clearHistory();
+    const gems = this._createGems(inst);
+    this._moveGems(inst, gems);
+    this._landGems(gems);
+    this._handleAllGems();
 
-    const gems = types.split('').map((type, i) => {
-      if (!gemTypes.has(type)) {
-        console.error(`Instruction: ${inst}. Bad gem type: ${type}`);
-      }
-
-      return this._addGem(new Gem(type, this._cols * i + this._gemOffset));
-    });
-
-    const history = [this._copyGems()];
-
-    moves.split('').forEach((move) => {
-      try {
-        this._handleMoveInst(gems, move);
-        history.push(this._copyGems());
-      } catch (err) {
-        console.error(`Instruction: ${inst}. ${err.message}`);
-      }
-    });
-
-    while (this._tick(gems)) {
-      history.push(this._copyGems());
-    }
-
-    this._gems.sort((a, b) => a.pos() - b.pos());
-
-    for (let i = 0; i < this._gems.length; ++i) {
-      const gem = this._gems[i];
-
-      if (gem.isCrash()) {
-        const gemsToDestroy = this._findConnectedGems(gem);
-
-        if (!gemsToDestroy.size) {
-          continue;
-        }
-
-        gemsToDestroy.add(gem);
-
-        this._gems = this._gems.filter((g) => {
-          if (gemsToDestroy.has(g)) {
-            this._field[g.pos()] = null;
-
-            return false;
-          }
-
-          return true;
-        });
-
-        history.push(this._copyGems());
-
-        while (this._tick(this._gems)) {
-          history.push(this._copyGems());
-        }
-
-        this._gems.sort((a, b) => a.pos() - b.pos());
-        i = -1;
-      }
-
-      if (gem.isCrash() && gem.isSimple()) {
-        console.log('simple-crash');
-      }
-      if (gem.isSimple() && this._formPowerGem(gem)) {
-        history.push(this._copyGems());
-      }
-    }
-
-    return history;
+    return this._history;
   }
 
   getStateStr() {
@@ -97,6 +37,155 @@ export class Game {
     }
 
     return state.join('\n');
+  }
+
+  _createGems(inst) {
+    const [types] = inst;
+    const gems = types.split('').map((type, i) => {
+      if (!gemTypes.has(type)) {
+        console.error(`Instruction: ${inst}. Bad gem type: ${type}`);
+      }
+
+      return this._addGem(new Gem(type, this._cols * i + this._gemOffset));
+    });
+
+    this._updateHistory();
+
+    return gems;
+  }
+
+  _addGem(gem) {
+    this._field[gem.pos()] = gem;
+    this._gems.push(gem);
+
+    return gem;
+  }
+
+  _moveGems(inst, gems) {
+    const [, moves] = inst;
+    moves.split('').forEach((move) => {
+      try {
+        this._handleMoveInst(gems, move);
+        this._updateHistory();
+      } catch (err) {
+        console.error(`Instruction: ${inst}. ${err.message}`);
+      }
+    });
+  }
+
+  _handleMoveInst(pair, cmd) {
+    switch (cmd) {
+      case 'L':
+        pair
+          .slice()
+          .sort((a, b) => a.pos() - b.pos())
+          .forEach((gem) => this._moveGemLeft(gem));
+        break;
+
+      case 'R':
+        pair
+          .slice()
+          .sort((a, b) => b.pos() - a.pos())
+          .forEach((gem) => this._moveGemRight(gem));
+        break;
+
+      case 'A':
+        this._rotateGemACW(pair[1], pair[0].pos());
+        break;
+
+      case 'B':
+        this._rotateGemCW(pair[1], pair[0].pos());
+        break;
+
+      default:
+        throw new Error(`Bad move: ${cmd}`);
+    }
+  }
+
+  _moveGemLeft(gem) {
+    return this._setGemPos(gem, gem.pos() - 1);
+  }
+
+  _moveGemRight(gem) {
+    return this._setGemPos(gem, gem.pos() + 1);
+  }
+
+  _moveGemDown(gem) {
+    return this._setGemPos(gem, gem.pos() + this._cols);
+  }
+
+  _rotateGemCW(gem, point) {
+    if (gem.pos() - point === 1) {
+      return this._setGemPos(gem, gem.pos() + this._cols - 1);
+    }
+
+    return this._setGemPos(gem, gem.pos() - this._cols - 1);
+  }
+
+  _rotateGemACW(gem, point) {
+    if (gem.pos() - point === -1) {
+      return this._setGemPos(gem, gem.pos() + this._cols + 1);
+    }
+
+    return this._setGemPos(gem, gem.pos() - this._cols + 1);
+  }
+
+  _setGemPos(gem, pos) {
+    if (this._isEmptyCell(pos)) {
+      this._field[pos] = gem;
+      this._field[gem.pos()] = null;
+      gem.setPos(pos);
+
+      return true;
+    }
+
+    return false;
+  }
+
+  _landGems(gems) {
+    let isUnstable = true;
+
+    while (isUnstable) {
+      isUnstable = false;
+
+      for (let n = gems.length - 1; n >= 0; --n) {
+        isUnstable = this._moveGemDown(gems[n]) || isUnstable;
+      }
+
+      if (isUnstable) {
+        this._updateHistory();
+      }
+    }
+
+    this._gems.sort((a, b) => a.pos() - b.pos());
+  }
+
+  _handleAllGems() {
+    for (let i = 0; i < this._gems.length; ++i) {
+      const gem = this._gems[i];
+
+      if (gem.isCrash() && this._handleCrashGem(gem)) {
+        i = -1;
+      }
+
+      if (gem.isSimple() && this._formPowerGem(gem)) {
+        this._updateHistory();
+      }
+    }
+  }
+
+  _handleCrashGem(gem) {
+    const gemsToDestroy = this._findConnectedGems(gem);
+
+    if (gemsToDestroy.size > 0) {
+      gemsToDestroy.add(gem);
+      this._destroyGems(gemsToDestroy);
+      this._landGems(this._gems);
+
+      return true;
+    }
+
+    return false;
   }
 
   _findConnectedGems(gem, foundGems = new Set()) {
@@ -122,6 +211,20 @@ export class Game {
     return foundGems;
   }
 
+  _destroyGems(gems) {
+    this._gems = this._gems.filter((g) => {
+      if (gems.has(g)) {
+        this._field[g.pos()] = null;
+
+        return false;
+      }
+
+      return true;
+    });
+
+    this._updateHistory();
+  }
+
   _formPowerGem(gem) {
     const gems = [
       gem,
@@ -136,8 +239,8 @@ export class Game {
     if (isEqual) {
       const powerGem = new PowerGem(this._cols, gems);
       gems.forEach((gem) => gem.setParent(powerGem));
-      this._expandRight(powerGem);
-      this._expandBottom(powerGem);
+      this._expandPGRight(powerGem);
+      this._expandPGBottom(powerGem);
 
       return true;
     }
@@ -145,7 +248,7 @@ export class Game {
     return false;
   }
 
-  _expandRight(pgem) {
+  _expandPGRight(pgem) {
     const gems = [];
 
     do {
@@ -157,7 +260,7 @@ export class Game {
     } while (pgem.expand('H', gems));
   }
 
-  _expandBottom(pgem) {
+  _expandPGBottom(pgem) {
     const gems = [];
 
     do {
@@ -169,73 +272,20 @@ export class Game {
     } while (pgem.expand('V', gems));
   }
 
-  _tick(gems) {
-    let isUnstable = false;
-
-    for (let n = gems.length - 1; n >= 0; --n) {
-      isUnstable = this._moveDown(gems[n]) || isUnstable;
-    }
-
-    return isUnstable;
-  }
-
-  _addGem(gem) {
-    this._field[gem.pos()] = gem;
-    this._gems.push(gem);
-
-    return gem;
-  }
-
-  _moveLeft(gem) {
-    return this._setPos(gem, gem.pos() - 1);
-  }
-
-  _moveRight(gem) {
-    return this._setPos(gem, gem.pos() + 1);
-  }
-
-  _moveDown(gem) {
-    return this._setPos(gem, gem.pos() + this._cols);
-  }
-
-  _rotateCW(gem, point) {
-    if (gem.pos() - point === 1) {
-      return this._setPos(gem, gem.pos() + this._cols - 1);
-    }
-
-    return this._setPos(gem, gem.pos() - this._cols - 1);
-  }
-
-  _rotateACW(gem, point) {
-    if (gem.pos() - point === -1) {
-      return this._setPos(gem, gem.pos() + this._cols + 1);
-    }
-
-    return this._setPos(gem, gem.pos() - this._cols + 1);
-  }
-
-  _setPos(gem, pos) {
-    if (this._isEmptyCell(pos)) {
-      this._field[pos] = gem;
-      this._field[gem.pos()] = null;
-      gem.setPos(pos);
-
-      return true;
-    }
-
-    return false;
-  }
-
   _isEmptyCell(i) {
-    return this._isValidIndex(i) && this._field[i] == null;
+    return i >= 0 && i < this._field.length && this._field[i] == null;
   }
 
   _at(i) {
-    return this._isValidIndex(i) ? this._field[i] : null;
+    return i >= 0 && i < this._field.length ? this._field[i] : null;
   }
 
-  _isValidIndex(i) {
-    return i >= 0 && i < this._field.length;
+  _clearHistory() {
+    this._history.length = 0;
+  }
+
+  _updateHistory() {
+    this._history.push(this._copyGems());
   }
 
   _copyGems() {
@@ -259,34 +309,5 @@ export class Game {
     });
 
     return gems;
-  }
-
-  _handleMoveInst(pair, cmd) {
-    switch (cmd) {
-      case 'L':
-        pair
-          .slice()
-          .sort((a, b) => a.pos() - b.pos())
-          .forEach((gem) => this._moveLeft(gem));
-        break;
-
-      case 'R':
-        pair
-          .slice()
-          .sort((a, b) => b.pos() - a.pos())
-          .forEach((gem) => this._moveRight(gem));
-        break;
-
-      case 'A':
-        this._rotateACW(pair[1], pair[0].pos());
-        break;
-
-      case 'B':
-        this._rotateCW(pair[1], pair[0].pos());
-        break;
-
-      default:
-        throw new Error(`Bad move: ${cmd}`);
-    }
   }
 }

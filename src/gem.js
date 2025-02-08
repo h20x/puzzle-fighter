@@ -2,15 +2,17 @@ export class Gem {
   constructor(type, pos) {
     this._type = type;
     this._pos = pos;
+    this._color = type.toLowerCase();
+    this._isCrash = 'rgb'.includes(type);
     this._parent = null;
-  }
-
-  color() {
-    return this._type.toLowerCase();
   }
 
   type() {
     return this._type;
+  }
+
+  color() {
+    return this._color;
   }
 
   pos() {
@@ -29,6 +31,10 @@ export class Gem {
     return this._parent;
   }
 
+  clone() {
+    return new Gem(this.type(), this.pos());
+  }
+
   setPos(val) {
     this._pos = val;
   }
@@ -37,16 +43,8 @@ export class Gem {
     this._parent = powerGem;
   }
 
-  clone() {
-    return new Gem(this.type(), this.pos());
-  }
-
-  isEqual(gem) {
-    return gem && this._type == gem.type();
-  }
-
   isCrash() {
-    return 'rgb'.indexOf(this._type) >= 0;
+    return this._isCrash;
   }
 
   isSimple() {
@@ -68,6 +66,10 @@ export class PowerGem {
     return this._gems[0].type();
   }
 
+  color() {
+    return this._gems[0].color();
+  }
+
   pos() {
     return this._gems[0].pos();
   }
@@ -78,6 +80,14 @@ export class PowerGem {
 
   height() {
     return this._height;
+  }
+
+  clone() {
+    const gems = this._gems.map((gem) => gem.clone());
+    const powerGem = new PowerGem(this._fieldWidth, gems);
+    gems.forEach((gem) => gem.setParent(powerGem));
+
+    return powerGem;
   }
 
   forEachGem(cb) {
@@ -101,16 +111,8 @@ export class PowerGem {
     return true;
   }
 
-  clone() {
-    const gems = this._gems.map((gem) => gem.clone());
-    const powerGem = new PowerGem(this._fieldWidth, gems);
-    gems.forEach((gem) => gem.setParent(powerGem));
-
-    return powerGem;
-  }
-
   _canConsume(gem) {
-    return gem && !gem.parent() && gem.type() === this.type();
+    return gem && gem.isSimple() && gem.color() === this.color();
   }
 
   _updateProps() {
