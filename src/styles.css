@@ -27,6 +27,29 @@ body {
   background: #777;
 }
 
+.scale {
+  position: absolute;
+  right: 100%;
+  top: 0;
+  height: 100%;
+  counter-reset: n calc(var(--cols) * -1);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.scale-item {
+  counter-increment: n var(--cols);
+  width: var(--gem-size);
+  height: var(--gem-size);
+  display: flex;
+  justify-content: end;
+  padding: 2px 5px;
+}
+
+.scale-item::before {
+  content: counter(n);
+}
+
 .hlines,
 .vlines {
   display: flex;

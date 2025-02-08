@@ -21,12 +21,16 @@ export class Field {
   _createHTML(gems = []) {
     let html = '';
 
+    html += `<div class="scale">
+      ${'<div class="scale-item"></div>'.repeat(this._rows)}
+    </div>`;
+
     html += `<div class="vlines">
-    ${'<div class="line"></div>'.repeat(this._cols - 1)}
+      ${'<div class="line"></div>'.repeat(this._cols - 1)}
     </div>`;
 
     html += `<div class="hlines">
-    ${'<div class="line"></div>'.repeat(this._rows - 1)}
+      ${'<div class="line"></div>'.repeat(this._rows - 1)}
     </div>`;
 
     const pgems = new Set();

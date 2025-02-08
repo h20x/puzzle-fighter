@@ -95,7 +95,7 @@ function parseCommands() {
     .split('\n')
     .filter(Boolean)
     .forEach((str) => {
-      str = str.replace(/(\s|>)/g, '');
+      str = str.replace(/[\s\[\]>'"]/g, '');
       const c = str.split(',', 2);
 
       if (c.length < 2) {
