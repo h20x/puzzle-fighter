@@ -13,12 +13,14 @@ let hp = 0;
 const btnPrevState = document.getElementById('prev-state');
 const btnNextState = document.getElementById('next-state');
 const btnNextCmd = document.getElementById('next-cmd');
+const btnLastCmd = document.getElementById('last-cmd');
 const btnReset = document.getElementById('reset');
 const commandList = document.getElementById('commands');
 
 btnPrevState.addEventListener('click', prevState);
 btnNextState.addEventListener('click', nextState);
 btnNextCmd.addEventListener('click', nextCmd);
+btnLastCmd.addEventListener('click', lastCmd);
 btnReset.addEventListener('click', reset);
 
 document.addEventListener('keydown', (e) => {
@@ -42,6 +44,9 @@ document.addEventListener('keydown', (e) => {
 
     case 'KeyR':
       return reset();
+
+    case 'KeyT':
+      return lastCmd();
   }
 });
 
@@ -60,13 +65,28 @@ function reset() {
   nextCmd();
 }
 
-function nextCmd() {
-  if (cp >= commands.length) {
-    hp = history.length - 1;
-  } else {
-    hp = 0;
+function lastCmd() {
+  while (cp < commands.length) {
     history = game.exec(commands[cp++]);
   }
+
+  hp = history.length - 1;
+
+  if (history.length) {
+    field.render(history[hp]);
+  }
+
+  updateCommandList();
+  updateControls();
+}
+
+function nextCmd() {
+  if (cp >= commands.length) {
+    return;
+  }
+
+  hp = 0;
+  history = game.exec(commands[cp++]);
 
   if (history.length) {
     field.render(history[hp]);
@@ -83,8 +103,8 @@ function updateControls() {
 }
 
 function updateCommandList() {
-  commandList.value = commands.reduce((acc, cur, i) => {
-    return acc + (i === cp - 1 ? '> ' : '  ') + cur.join(', ') + '\n';
+  commandList.value = commands.reduce((acc, [types, moves], i) => {
+    return acc + (i === cp - 1 ? '> ' : '  ') + `['${types}'], ['${moves}']\n`;
   }, '');
 }
 

@@ -43,7 +43,8 @@ body {
   height: var(--gem-size);
   display: flex;
   justify-content: end;
-  padding: 2px 5px;
+  align-items: center;
+  padding: 5px;
 }
 
 .scale-item::before {
