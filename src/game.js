@@ -175,6 +175,8 @@ export class Game {
   }
 
   _handleAllGems() {
+    const pgems = new Set();
+
     for (let i = 0; i < this._gems.length; ++i) {
       const gem = this._gems[i];
 
@@ -183,6 +185,16 @@ export class Game {
       }
 
       if (gem.isSimple() && this._formPowerGem(gem)) {
+        this._updateHistory();
+      }
+
+      if (gem.parent()) {
+        pgems.add(gem.parent());
+      }
+    }
+
+    for (const pgem of pgems) {
+      if (this._expandPowerGem(pgem)) {
         this._updateHistory();
       }
     }
@@ -262,6 +274,29 @@ export class Game {
     return false;
   }
 
+  _expandPowerGem(pgem) {
+    const size = pgem.height() * pgem.width();
+
+    this._expandPGLeft(pgem);
+    this._expandPGRight(pgem);
+    this._expandPGTop(pgem);
+    this._expandPGBottom(pgem);
+
+    return size !== pgem.height() * pgem.width();
+  }
+
+  _expandPGLeft(pgem) {
+    const gems = [];
+
+    do {
+      gems.length = 0;
+
+      for (let i = 0; i < pgem.height(); ++i) {
+        gems.push(this._at(pgem.pos() + this._cols * i - 1));
+      }
+    } while (pgem.expand('H', gems));
+  }
+
   _expandPGRight(pgem) {
     const gems = [];
 
@@ -272,6 +307,18 @@ export class Game {
         gems.push(this._at(pgem.pos() + pgem.width() + i * this._cols));
       }
     } while (pgem.expand('H', gems));
+  }
+
+  _expandPGTop(pgem) {
+    const gems = [];
+
+    do {
+      gems.length = 0;
+
+      for (let i = 0; i < pgem.width(); ++i) {
+        gems.push(this._at(pgem.pos() - this._cols + i));
+      }
+    } while (pgem.expand('V', gems));
   }
 
   _expandPGBottom(pgem) {
@@ -306,7 +353,7 @@ export class Game {
     const pgems = new Set();
     const gems = [];
 
-    this._gems.forEach((gem) => {
+    for (const gem of this._gems) {
       const pgem = gem.parent();
 
       if (pgem && !pgems.has(pgem)) {
@@ -320,7 +367,7 @@ export class Game {
       if (!pgem) {
         gems.push(gem.clone());
       }
-    });
+    }
 
     return gems;
   }

@@ -71,4 +71,43 @@ describe('Game', () => {
       expect(game.getPowerGems()).toEqual(pgems);
     });
   });
+
+  it('power gems should expand', () => {
+    [
+      [
+        [
+          ['RR', 'ALLL'],
+          ['RG', 'AL'],
+          ['RR', 'ALLL'],
+          ['GG', 'AL'],
+          ['GG', 'ALLL'],
+          ['RR', 'ALLL'],
+          ['RG', 'L'],
+          ['Bg', 'LR'],
+        ],
+        ['RR', 'RRR', 'RRRB'],
+        [[60, '3x2']],
+      ],
+      [
+        [
+          ['BR', 'ALLL'],
+          ['RR', 'AL'],
+          ['GG', 'ALLL'],
+          ['GR', 'AL'],
+          ['GR', 'ALLL'],
+          ['GG', 'LLL'],
+          ['RR', 'L'],
+          ['Rg', 'LL'],
+        ],
+        [' RR', ' RRR', 'BRRR'],
+        [[55, '2x3']],
+      ],
+    ].forEach(([instuctions, state, pgems]) => {
+      const game = createGame();
+      instuctions.forEach((inst) => game.exec(inst));
+
+      expect(game.getStateStr()).toBe(createStateStr(state));
+      expect(game.getPowerGems()).toEqual(pgems);
+    });
+  });
 });
