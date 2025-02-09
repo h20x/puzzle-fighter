@@ -175,8 +175,6 @@ export class Game {
   }
 
   _handleAllGems() {
-    const pgems = new Set();
-
     for (let i = 0; i < this._gems.length; ++i) {
       const gem = this._gems[i];
 
@@ -184,20 +182,13 @@ export class Game {
         i = -1;
       }
 
-      if (gem.isSimple() && this._formPowerGem(gem)) {
-        this._updateHistory();
-      }
-
-      if (gem.parent()) {
-        pgems.add(gem.parent());
+      if (gem.isSimple()) {
+        this._formPowerGem(gem);
       }
     }
 
-    for (const pgem of pgems) {
-      if (this._expandPowerGem(pgem)) {
-        this._updateHistory();
-      }
-    }
+    this._expandPowerGems();
+    this._mergePowerGems();
   }
 
   _handleCrashGem(gem) {
@@ -265,8 +256,9 @@ export class Game {
     if (isEqual) {
       const powerGem = new PowerGem(this._cols, gems);
       gems.forEach((gem) => gem.setParent(powerGem));
-      this._expandPGRight(powerGem);
-      this._expandPGBottom(powerGem);
+      this._expandPowerGemRight(powerGem);
+      this._expandPowerGemBottom(powerGem);
+      this._updateHistory();
 
       return true;
     }
@@ -274,18 +266,35 @@ export class Game {
     return false;
   }
 
+  _expandPowerGems() {
+    const gemsToSkip = new Set();
+
+    for (const gem of this._gems) {
+      const pgem = gem.parent();
+
+      if (!pgem || gemsToSkip.has(pgem)) {
+        continue;
+      }
+
+      gemsToSkip.add(pgem);
+      this._expandPowerGem(pgem);
+    }
+  }
+
   _expandPowerGem(pgem) {
     const size = pgem.height() * pgem.width();
 
-    this._expandPGLeft(pgem);
-    this._expandPGRight(pgem);
-    this._expandPGTop(pgem);
-    this._expandPGBottom(pgem);
+    this._expandPowerGemLeft(pgem);
+    this._expandPowerGemRight(pgem);
+    this._expandPowerGemTop(pgem);
+    this._expandPowerGemBottom(pgem);
 
-    return size !== pgem.height() * pgem.width();
+    if (size !== pgem.height() * pgem.width()) {
+      this._updateHistory();
+    }
   }
 
-  _expandPGLeft(pgem) {
+  _expandPowerGemLeft(pgem) {
     const gems = [];
 
     do {
@@ -297,7 +306,7 @@ export class Game {
     } while (pgem.expand('H', gems));
   }
 
-  _expandPGRight(pgem) {
+  _expandPowerGemRight(pgem) {
     const gems = [];
 
     do {
@@ -309,7 +318,7 @@ export class Game {
     } while (pgem.expand('H', gems));
   }
 
-  _expandPGTop(pgem) {
+  _expandPowerGemTop(pgem) {
     const gems = [];
 
     do {
@@ -321,7 +330,7 @@ export class Game {
     } while (pgem.expand('V', gems));
   }
 
-  _expandPGBottom(pgem) {
+  _expandPowerGemBottom(pgem) {
     const gems = [];
 
     do {
@@ -331,6 +340,32 @@ export class Game {
         gems.push(this._at(pgem.pos() + this._cols * pgem.height() + i));
       }
     } while (pgem.expand('V', gems));
+  }
+
+  _mergePowerGems() {
+    const gemsToSkip = new Set();
+
+    for (const gem of this._gems) {
+      const pgem = gem.parent();
+
+      if (!pgem || gemsToSkip.has(pgem)) {
+        continue;
+      }
+
+      gemsToSkip.add(pgem);
+      this._mergePowerGem(pgem);
+    }
+  }
+
+  _mergePowerGem(pgem) {
+    const size = pgem.height() * pgem.width();
+
+    while (pgem.merge('H', this._at(pgem.pos() + pgem.width())));
+    while (pgem.merge('V', this._at(pgem.pos() + this._cols * pgem.height())));
+
+    if (size !== pgem.height() * pgem.width()) {
+      this._updateHistory();
+    }
   }
 
   _isEmptyCell(i) {
@@ -350,18 +385,15 @@ export class Game {
   }
 
   _copyGems() {
-    const pgems = new Set();
+    const gemsToSkip = new Set();
     const gems = [];
 
     for (const gem of this._gems) {
       const pgem = gem.parent();
 
-      if (pgem && !pgems.has(pgem)) {
-        pgems.add(pgem);
-        gem
-          .parent()
-          .clone()
-          .forEachGem((g) => gems.push(g));
+      if (pgem && !gemsToSkip.has(pgem)) {
+        gemsToSkip.add(pgem);
+        pgem.clone().forEachGem((g) => gems.push(g));
       }
 
       if (!pgem) {

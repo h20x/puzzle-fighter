@@ -110,4 +110,34 @@ describe('Game', () => {
       expect(game.getPowerGems()).toEqual(pgems);
     });
   });
+
+  it('power gems should merge', () => {
+    const game = createGame();
+
+    [
+      ['RR', 'ALLL'],
+      ['RR', 'AL'],
+      ['RR', 'ALLL'],
+      ['GG', 'AL'],
+      ['RR', 'AR'],
+      ['RR', 'AR'],
+      ['RR', 'AR'],
+      ['GG', 'ALLL'],
+      ['GG', 'AL'],
+      ['RR', 'AL'],
+      ['GG', 'AL'],
+      ['RR', 'AL'],
+      ['GG', 'ALLL'],
+      ['GG', 'ALLL'],
+      ['Bg', 'LLL'],
+    ].forEach((inst) => game.exec(inst));
+
+    expect(game.getStateStr()).toBe(
+      createStateStr(['B RRRR', 'RRRRRR', 'RRRRRR'])
+    );
+    expect(game.getPowerGems()).toEqual([
+      [56, '4x3'],
+      [60, '2x2'],
+    ]);
+  });
 });

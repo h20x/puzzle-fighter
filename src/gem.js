@@ -115,6 +115,43 @@ export class PowerGem {
     return true;
   }
 
+  merge(dir, gem) {
+    if (!gem) {
+      return false;
+    }
+
+    const pgem = gem.parent();
+
+    if (!pgem || pgem === this || pgem.color() !== this.color()) {
+      return false;
+    }
+
+    if (
+      dir === 'H' &&
+      (pgem.pos() !== this.pos() + this.width() ||
+        pgem.height() !== this.height())
+    ) {
+      return false;
+    }
+
+    if (
+      dir === 'V' &&
+      (pgem.pos() !== this.pos() + this._fieldWidth * this.height() ||
+        pgem.width() !== this.width())
+    ) {
+      return false;
+    }
+
+    pgem.forEachGem((g) => {
+      g.setParent(this);
+      this._gems.push(g);
+    });
+
+    this._updateProps();
+
+    return true;
+  }
+
   _canConsume(gem) {
     return gem && gem.isSimple() && gem.color() === this.color();
   }

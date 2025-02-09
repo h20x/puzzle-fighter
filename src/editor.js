@@ -104,7 +104,7 @@ function updateControls() {
 
 function updateCommandList() {
   commandList.value = commands.reduce((acc, [types, moves], i) => {
-    return acc + (i === cp - 1 ? '> ' : '  ') + `['${types}'], ['${moves}']\n`;
+    return acc + (i === cp - 1 ? '> ' : '  ') + `['${types}', '${moves}'],\n`;
   }, '');
 }
 
