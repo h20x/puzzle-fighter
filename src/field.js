@@ -57,6 +57,8 @@ export class Field {
 
     if (type === 'r' || type === 'g' || type === 'b') {
       cls.push('crash');
+    } else if (type === '0') {
+      cls.push('rainbow');
     } else {
       cls.push('simple');
     }

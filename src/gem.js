@@ -48,7 +48,11 @@ export class Gem {
   }
 
   isSimple() {
-    return !this.parent() && !this.isCrash();
+    return !this.parent() && !this.isCrash() && !this.isRainbow();
+  }
+
+  isRainbow() {
+    return this._type === '0';
   }
 }
 

@@ -1,6 +1,6 @@
 import { Gem, PowerGem } from './gem.js';
 
-const gemTypes = new Set(['R', 'G', 'B', 'r', 'g', 'b']);
+const gemTypes = new Set(['R', 'G', 'B', 'r', 'g', 'b', '0']);
 
 export class Game {
   constructor(cols, rows, gemOffset = 3) {
@@ -182,6 +182,10 @@ export class Game {
         i = -1;
       }
 
+      if (gem.isRainbow() && this._handleRainbowGem(gem)) {
+        i = -1;
+      }
+
       if (gem.isSimple()) {
         this._formPowerGem(gem);
       }
@@ -240,6 +244,23 @@ export class Game {
     });
 
     this._updateHistory();
+  }
+
+  _handleRainbowGem(rgem) {
+    const gemBelow = this._at(rgem.pos() + this._cols);
+
+    if (gemBelow) {
+      const gemsToDestroy = this._gems.filter(
+        (g) => g.color() === gemBelow.color()
+      );
+      gemsToDestroy.push(rgem);
+      this._destroyGems(new Set(gemsToDestroy));
+      this._landGems(this._gems);
+
+      return true;
+    }
+
+    return false;
   }
 
   _formPowerGem(gem) {

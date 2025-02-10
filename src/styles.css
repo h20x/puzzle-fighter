@@ -145,3 +145,17 @@ body {
   border-radius: 50%;
   background: #fff;
 }
+
+.gem.rainbow {
+  border-radius: 50%;
+  background: linear-gradient(
+    90deg,
+    #ff3c3c 0%,
+    #ff3c3c 25%,
+    #3cb4ff 25%,
+    #3cb4ff 50%,
+    #00e600 50%,
+    #00e600 75%,
+    #ebeb00 75%
+  );
+}

@@ -140,4 +140,49 @@ describe('Game', () => {
       [60, '2x2'],
     ]);
   });
+
+  it('rainbow gems should destroy all gems that match the color', () => {
+    [
+      [
+        [
+          ['BB', 'ALLL'],
+          ['BR', 'AL'],
+          ['GR', 'R'],
+          ['RR', 'LL'],
+          ['GR', 'L'],
+          ['RR', 'LR'],
+          ['RR', 'R'],
+          ['RR', 'R'],
+          ['RR', 'L'],
+          ['0G', 'LL'],
+        ],
+        ['    R', '  R R', ' RRRR', ' RRRR', 'BBBRR'],
+        [[55, '4x2']],
+      ],
+      [
+        [
+          ['BB', 'ALLL'],
+          ['BR', 'AL'],
+          ['GR', 'R'],
+          ['RR', 'LL'],
+          ['GR', 'L'],
+          ['RR', 'LR'],
+          ['RR', 'R'],
+          ['RR', 'R'],
+          ['RR', 'L'],
+          ['0G', 'LL'],
+          ['00', 'RR'],
+          ['R0', 'LL'],
+        ],
+        ['BBB'],
+        [],
+      ],
+    ].forEach(([instuctions, state, pgems]) => {
+      const game = createGame();
+      instuctions.forEach((inst) => game.exec(inst));
+
+      expect(game.getStateStr()).toBe(createStateStr(state));
+      expect(game.getPowerGems()).toEqual(pgems);
+    });
+  });
 });
