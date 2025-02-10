@@ -52,12 +52,11 @@ export class Field {
   }
 
   _createGem(gem) {
-    const type = gem.type();
-    const cls = ['gem', type.toLowerCase()];
+    const cls = ['gem', gem.color()];
 
-    if (type === 'r' || type === 'g' || type === 'b' || type === 'y') {
+    if (gem.isCrash()) {
       cls.push('crash');
-    } else if (type === '0') {
+    } else if (gem.isRainbow()) {
       cls.push('rainbow');
     } else {
       cls.push('simple');

@@ -47,12 +47,12 @@ export class Gem {
     return this._isCrash;
   }
 
-  isSimple() {
-    return !this.parent() && !this.isCrash() && !this.isRainbow();
-  }
-
   isRainbow() {
     return this._type === '0';
+  }
+
+  isSimple() {
+    return !this.parent() && !this.isCrash() && !this.isRainbow();
   }
 }
 
@@ -154,6 +154,18 @@ export class PowerGem {
     this._updateProps();
 
     return true;
+  }
+
+  isCrash() {
+    return false;
+  }
+
+  isRainbow() {
+    return false;
+  }
+
+  isSimple() {
+    return false;
   }
 
   _canConsume(gem) {

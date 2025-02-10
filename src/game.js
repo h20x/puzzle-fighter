@@ -195,8 +195,8 @@ export class Game {
     this._mergePowerGems();
   }
 
-  _handleCrashGem(gem) {
-    const gemsToDestroy = this._findConnectedGems(gem);
+  _handleCrashGem(cgem) {
+    const gemsToDestroy = this._findConnectedGems(cgem);
 
     if (gemsToDestroy.size > 1) {
       this._destroyGems(gemsToDestroy);
