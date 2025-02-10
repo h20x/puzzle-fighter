@@ -185,4 +185,63 @@ describe('Game', () => {
       expect(game.getPowerGems()).toEqual(pgems);
     });
   });
+
+  it('should consider the width of the field when searching for adjacent gems', () => {
+    [
+      [
+        [
+          ['BB', 'AR'],
+          ['GG', 'LLL'],
+          ['GG', 'RR'],
+        ],
+        ['     G', 'G    G', 'G   BB'],
+        [],
+      ],
+      [
+        [
+          ['BB', 'AR'],
+          ['GG', 'LLL'],
+          ['GG', 'RR'],
+          ['GG', 'R'],
+        ],
+        ['    GG', 'G   GG', 'G   BB'],
+        [[58, '2x2']],
+      ],
+      [
+        [
+          ['BB', 'AR'],
+          ['GG', 'LLL'],
+          ['GG', 'RR'],
+          ['GG', 'LL'],
+        ],
+        ['     G', 'GG   G', 'GG  BB'],
+        [[60, '2x2']],
+      ],
+      [
+        [
+          ['BB', 'AR'],
+          ['Rg', 'AR'],
+          ['GG', 'ALLL'],
+        ],
+        ['    Rg', 'GG  BB'],
+        [],
+      ],
+      [
+        [
+          ['BB', 'ALLL'],
+          ['Rg', 'BLL'],
+          ['GG', 'AR'],
+          ['GG', 'RR'],
+        ],
+        ['     G', 'gR   G', 'BB  GG'],
+        [],
+      ],
+    ].forEach(([instuctions, state, pgems]) => {
+      const game = createGame();
+      instuctions.forEach((inst) => game.exec(inst));
+
+      expect(game.getStateStr()).toBe(createStateStr(state));
+      expect(game.getPowerGems()).toEqual(pgems);
+    });
+  });
 });

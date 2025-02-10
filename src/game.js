@@ -215,11 +215,12 @@ export class Game {
 
     foundGems.add(gem);
 
+    const pos = gem.pos();
     const gems = [
-      this._at(gem.pos() - 1),
-      this._at(gem.pos() + 1),
-      this._at(gem.pos() - this._cols),
-      this._at(gem.pos() + this._cols),
+      this._isSameRow(pos, pos - 1) ? this._at(pos - 1) : null,
+      this._isSameRow(pos, pos + 1) ? this._at(pos + 1) : null,
+      this._at(pos - this._cols),
+      this._at(pos + this._cols),
     ];
 
     for (const g of gems) {
@@ -263,12 +264,18 @@ export class Game {
   }
 
   _formPowerGem(gem) {
+    const lt = gem.pos();
+    const rt = lt + 1;
+    const lb = lt + this._cols;
+    const rb = lb + 1;
+
     const gems = [
       gem,
-      this._at(gem.pos() + 1),
-      this._at(gem.pos() + this._cols),
-      this._at(gem.pos() + this._cols + 1),
+      this._isSameRow(lt, rt) ? this._at(rt) : null,
+      this._at(lb),
+      this._isSameRow(lb, rb) ? this._at(rb) : null,
     ];
+
     const isEqual = gems.every(
       (g) => g && g.isSimple() && g.color() === gem.color()
     );
@@ -321,7 +328,11 @@ export class Game {
       gems.length = 0;
 
       for (let i = 0; i < pgem.height(); ++i) {
-        gems.push(this._at(pgem.pos() + this._cols * i - 1));
+        const idx = pgem.pos() + this._cols * i;
+
+        if (this._isSameRow(idx, idx - 1)) {
+          gems.push(this._at(idx - 1));
+        }
       }
     } while (pgem.expand('H', gems));
   }
@@ -333,7 +344,11 @@ export class Game {
       gems.length = 0;
 
       for (let i = 0; i < pgem.height(); ++i) {
-        gems.push(this._at(pgem.pos() + pgem.width() + i * this._cols));
+        const idx = pgem.pos() + (pgem.width() - 1) + i * this._cols;
+
+        if (this._isSameRow(idx, idx + 1)) {
+          gems.push(this._at(idx + 1));
+        }
       }
     } while (pgem.expand('H', gems));
   }
@@ -422,5 +437,9 @@ export class Game {
     }
 
     return gems;
+  }
+
+  _isSameRow(i1, i2) {
+    return Math.floor(i1 / this._cols) === Math.floor(i2 / this._cols);
   }
 }
