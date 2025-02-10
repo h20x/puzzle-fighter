@@ -1,6 +1,6 @@
 import { Gem, PowerGem } from './gem.js';
 
-const gemTypes = new Set(['R', 'G', 'B', 'r', 'g', 'b', '0']);
+const gemTypes = new Set(['R', 'G', 'B', 'Y', 'r', 'g', 'b', 'y', '0']);
 
 export class Game {
   constructor(cols, rows, gemOffset = 3) {

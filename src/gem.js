@@ -3,7 +3,7 @@ export class Gem {
     this._type = type;
     this._pos = pos;
     this._color = type.toLowerCase();
-    this._isCrash = 'rgb'.includes(type);
+    this._isCrash = 'rgby'.includes(type);
     this._parent = null;
   }
 

@@ -55,7 +55,7 @@ export class Field {
     const type = gem.type();
     const cls = ['gem', type.toLowerCase()];
 
-    if (type === 'r' || type === 'g' || type === 'b') {
+    if (type === 'r' || type === 'g' || type === 'b' || type === 'y') {
       cls.push('crash');
     } else if (type === '0') {
       cls.push('rainbow');

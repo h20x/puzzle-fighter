@@ -123,6 +123,10 @@ body {
   background: #3cb4ff;
 }
 
+.gem.y {
+  background: #ebeb00;
+}
+
 .gem.simple {
   border-radius: 10px;
   border: 5px solid rgba(0, 0, 0, 0.5);
