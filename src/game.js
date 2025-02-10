@@ -198,8 +198,7 @@ export class Game {
   _handleCrashGem(gem) {
     const gemsToDestroy = this._findConnectedGems(gem);
 
-    if (gemsToDestroy.size > 0) {
-      gemsToDestroy.add(gem);
+    if (gemsToDestroy.size > 1) {
       this._destroyGems(gemsToDestroy);
       this._landGems(this._gems);
 
