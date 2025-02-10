@@ -133,7 +133,6 @@ body {
 }
 
 .gem.crash {
-  position: relative;
   border-radius: 50%;
   border: 2px solid #000;
   display: flex;
