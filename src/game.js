@@ -117,11 +117,19 @@ export class Game {
   }
 
   _moveGemLeft(gem) {
-    return this._setGemPos(gem, gem.pos() - 1);
+    if (this._isSameRow(gem.pos(), gem.pos() - 1)) {
+      return this._setGemPos(gem, gem.pos() - 1);
+    }
+
+    return false;
   }
 
   _moveGemRight(gem) {
-    return this._setGemPos(gem, gem.pos() + 1);
+    if (this._isSameRow(gem.pos(), gem.pos() + 1)) {
+      return this._setGemPos(gem, gem.pos() + 1);
+    }
+
+    return false;
   }
 
   _moveGemDown(gem) {

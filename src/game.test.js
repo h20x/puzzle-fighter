@@ -269,4 +269,15 @@ describe('Game', () => {
       [61, '2x2'],
     ]);
   });
+
+  it('horizontal movement should be limited to the boundaries of the field', () => {
+    const game = createGame();
+
+    [
+      ['BB', 'RRRR'],
+      ['BB', 'LLLLLL'],
+    ].forEach((inst) => game.exec(inst));
+
+    expect(game.getStateStr()).toBe(createStateStr(['B    B', 'B    B']));
+  });
 });
