@@ -244,4 +244,29 @@ describe('Game', () => {
       expect(game.getPowerGems()).toEqual(pgems);
     });
   });
+
+  it('power gem should move down as one unit', () => {
+    const game = createGame();
+
+    [
+      ['BB', 'ALL'],
+      ['BB', 'ALL'],
+      ['GG', 'RL'],
+      ['RR', 'AL'],
+      ['RR', 'AL'],
+      ['YY', 'AL'],
+      ['YY', 'AL'],
+      ['BB', 'RL'],
+      ['0G', 'R'],
+      ['0R', 'R'],
+    ].forEach((inst) => game.exec(inst));
+
+    expect(game.getStateStr()).toBe(
+      createStateStr(['   B', '   B', '  YY', '  YY', ' BB', ' BB'])
+    );
+    expect(game.getPowerGems()).toEqual([
+      [50, '2x2'],
+      [61, '2x2'],
+    ]);
+  });
 });

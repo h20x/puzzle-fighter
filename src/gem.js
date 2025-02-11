@@ -94,8 +94,8 @@ export class PowerGem {
     return powerGem;
   }
 
-  forEachGem(cb) {
-    this._gems.forEach(cb);
+  gems() {
+    return this._gems.slice();
   }
 
   expand(dir, gems) {
@@ -146,7 +146,7 @@ export class PowerGem {
       return false;
     }
 
-    pgem.forEachGem((g) => {
+    pgem.gems().forEach((g) => {
       g.setParent(this);
       this._gems.push(g);
     });

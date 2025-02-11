@@ -161,9 +161,19 @@ export class Game {
 
     while (isUnstable) {
       isUnstable = false;
+      const gemsToSkip = new Set();
 
       for (let n = gems.length - 1; n >= 0; --n) {
-        isUnstable = this._moveGemDown(gems[n]) || isUnstable;
+        const pgem = gems[n].parent();
+
+        if (pgem && !gemsToSkip.has(pgem)) {
+          gemsToSkip.add(pgem);
+          isUnstable = this._movePowerGemDown(pgem) || isUnstable;
+        }
+
+        if (!pgem) {
+          isUnstable = this._moveGemDown(gems[n]) || isUnstable;
+        }
       }
 
       if (isUnstable) {
@@ -403,6 +413,24 @@ export class Game {
     }
   }
 
+  _movePowerGemDown(pgem) {
+    const canMoveDown = Array.from(
+      { length: pgem.width() },
+      (_, i) => pgem.pos() + this._cols * pgem.height() + i
+    ).every((pos) => this._isEmptyCell(pos));
+
+    if (canMoveDown) {
+      pgem
+        .gems()
+        .reverse()
+        .forEach((gem) => this._moveGemDown(gem));
+
+      return true;
+    }
+
+    return false;
+  }
+
   _isEmptyCell(i) {
     return i >= 0 && i < this._field.length && this._field[i] == null;
   }
@@ -428,7 +456,10 @@ export class Game {
 
       if (pgem && !gemsToSkip.has(pgem)) {
         gemsToSkip.add(pgem);
-        pgem.clone().forEachGem((g) => gems.push(g));
+        pgem
+          .clone()
+          .gems()
+          .forEach((g) => gems.push(g));
       }
 
       if (!pgem) {
