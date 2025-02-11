@@ -280,4 +280,37 @@ describe('Game', () => {
 
     expect(game.getStateStr()).toBe(createStateStr(['B    B', 'B    B']));
   });
+
+  it('should not add new gems if there is no space left', () => {
+    const game = createGame();
+
+    [
+      ['BB', 'RL'],
+      ['BB', 'RL'],
+      ['BB', 'RL'],
+      ['BB', 'RL'],
+      ['BB', 'RL'],
+      ['BB', 'RL'],
+      ['GG', 'RL'],
+      ['RR', 'RL'],
+      ['YY', 'RL'],
+    ].forEach((inst) => game.exec(inst));
+
+    expect(game.getStateStr()).toBe(
+      createStateStr([
+        '   B',
+        '   B',
+        '   B',
+        '   B',
+        '   B',
+        '   B',
+        '   B',
+        '   B',
+        '   B',
+        '   B',
+        '   B',
+        '   B',
+      ])
+    );
+  });
 });

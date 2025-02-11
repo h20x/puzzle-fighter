@@ -13,13 +13,17 @@ export class Game {
   }
 
   exec(inst) {
+    if (!this._checkEmptyCells()) {
+      return this._history.slice();
+    }
+
     this._clearHistory();
     const gems = this._createGems(inst);
     this._moveGems(inst, gems);
     this._landGems(gems);
     this._handleAllGems();
 
-    return this._history;
+    return this._history.slice();
   }
 
   getStateStr() {
@@ -51,6 +55,12 @@ export class Game {
     }
 
     return [...map];
+  }
+
+  _checkEmptyCells() {
+    return [this._gemOffset, this._cols + this._gemOffset].every((i) =>
+      this._isEmptyCell(i)
+    );
   }
 
   _createGems(inst) {
