@@ -1,4 +1,6 @@
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -104,53 +106,123 @@ body {
 
 .gem {
   position: absolute;
-  background: #fff;
   left: calc(var(--col) * var(--gem-size));
   top: calc(var(--row) * var(--gem-size));
   width: calc(var(--width) * var(--gem-size));
   height: calc(var(--height) * var(--gem-size));
 }
 
-.gem.r {
-  background: #ff3c3c;
+.gem--r {
+  --color: #ff3d3d;
+  --color-dark: #af2929;
+  --color-light: #ff8888;
 }
 
-.gem.g {
-  background: #00e600;
+.gem--g {
+  --color: #00e600;
+  --color-dark: #009e00;
+  --color-light: #64f064;
 }
 
-.gem.b {
-  background: #3cb4ff;
+.gem--b {
+  --color: #3db5ff;
+  --color-dark: #297caf;
+  --color-light: #88d1ff;
 }
 
-.gem.y {
-  background: #ebeb00;
+.gem--y {
+  --color: #ebeb00;
+  --color-dark: #a1a100;
+  --color-light: #f3f364;
 }
 
-.gem.simple {
-  border-radius: 10px;
-  border: 5px solid rgba(0, 0, 0, 0.5);
+.gem--simple {
+  --border: 10px;
 }
 
-.gem.crash {
+.gem--power {
+  --border: 20px;
+}
+
+.gem__t,
+.gem__b {
+  position: relative;
+  height: var(--border);
+  margin: 0 var(--border);
+  background: var(--color);
+}
+
+.gem__t::before,
+.gem__t::after,
+.gem__b::before,
+.gem__b::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  width: 0px;
+  height: 0px;
+  border-style: solid;
+  transform: rotate(0deg);
+}
+
+.gem__t::before {
+  right: 100%;
+  border-width: 0 0 var(--border) var(--border);
+  border-color: transparent transparent var(--color-light) transparent;
+}
+
+.gem__t::after {
+  left: 100%;
+  border-width: var(--border) 0 0 var(--border);
+  border-color: transparent transparent transparent var(--color-dark);
+}
+
+.gem__b::before {
+  right: 100%;
+  border-width: 0 var(--border) var(--border) 0;
+  border-color: transparent var(--color-dark) transparent transparent;
+}
+
+.gem__b::after {
+  left: 100%;
+  border-width: var(--border) var(--border) 0 0;
+  border-color: var(--color-light) transparent transparent transparent;
+}
+
+.gem__m {
+  height: calc(100% - 2 * var(--border));
+  padding: 0 var(--border);
+  background: var(--color);
+}
+
+.gem__m::before {
+  content: '';
+  display: block;
+  height: 100%;
+  background: var(--color-light);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.gem--crash {
   border-radius: 50%;
   border: 2px solid #000;
   display: flex;
   justify-content: center;
   align-items: center;
+  background: var(--color);
 }
 
-.gem.crash::before {
+.gem--crash::before {
   display: block;
   content: '';
-  width: 50%;
-  height: 50%;
+  width: 40%;
+  aspect-ratio: 1;
   border-radius: 50%;
-  background: #fff;
+  background: rgba(255, 255, 255, 0.9);
 }
 
-.gem.rainbow {
-  border-radius: 50%;
+.gem--rainbow {
+  clip-path: polygon(50% 100%, 95% 40%, 95% 20%, 75% 0, 25% 0, 5% 20%, 5% 40%);
   background: linear-gradient(
     90deg,
     #ff3c3c 0%,

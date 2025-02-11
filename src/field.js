@@ -52,14 +52,16 @@ export class Field {
   }
 
   _createGem(gem) {
-    const cls = ['gem', gem.color()];
+    const cls = ['gem', `gem--${gem.color()}`];
 
     if (gem.isCrash()) {
-      cls.push('crash');
+      cls.push('gem--crash');
     } else if (gem.isRainbow()) {
-      cls.push('rainbow');
+      cls.push('gem--rainbow');
+    } else if (gem.isSimple()) {
+      cls.push('gem--simple');
     } else {
-      cls.push('simple');
+      cls.push('gem--power');
     }
 
     const col = gem.pos() % this._cols;
@@ -72,6 +74,14 @@ export class Field {
       `--height: ${String(gem.height())}`,
     ].join('; ');
 
-    return `<div class="${clsStr}" style="${style}"></div>`;
+    if (gem.isCrash() || gem.isRainbow()) {
+      return `<div class="${clsStr}" style="${style}"></div>`;
+    }
+
+    return `<div class="${clsStr}" style="${style}">
+      <div class="gem__t"></div>
+      <div class="gem__m"></div>
+      <div class="gem__b"></div>
+    </div>`;
   }
 }
