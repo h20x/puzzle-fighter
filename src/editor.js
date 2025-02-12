@@ -78,6 +78,8 @@ function lastCmd() {
 
   updateCommandList();
   updateControls();
+
+  console.log(game.getStateStr());
 }
 
 function nextCmd() {
