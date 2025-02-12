@@ -95,6 +95,7 @@ export class Game {
         console.error(`Instruction: ${inst}. ${err.message}`);
       }
     });
+    gems.sort((a, b) => a.pos() - b.pos());
   }
 
   _handleMoveInst(pair, cmd) {
@@ -114,11 +115,11 @@ export class Game {
         break;
 
       case 'A':
-        this._rotateGemACW(pair[1], pair[0].pos());
+        this._rotateGemACW(pair[1], pair[0]);
         break;
 
       case 'B':
-        this._rotateGemCW(pair[1], pair[0].pos());
+        this._rotateGemCW(pair[1], pair[0]);
         break;
 
       default:
@@ -146,20 +147,92 @@ export class Game {
     return this._setGemPos(gem, gem.pos() + this._cols);
   }
 
-  _rotateGemCW(gem, point) {
-    if (gem.pos() - point === 1) {
-      return this._setGemPos(gem, gem.pos() + this._cols - 1);
+  _rotateGemCW(gem, anchor) {
+    const gPos = gem.pos();
+    const aPos = anchor.pos();
+    const diff = gPos - aPos;
+
+    // right
+    if (diff === 1) {
+      return this._setGemPos(gem, aPos + this._cols);
     }
 
-    return this._setGemPos(gem, gem.pos() - this._cols - 1);
+    // bottom
+    else if (diff === this._cols) {
+      // shift right
+      if (this._isLeftEdge(aPos) || !this._isEmptyCell(aPos - 1)) {
+        this._moveGemRight(anchor);
+        this._setGemPos(gem, aPos);
+      } else {
+        this._setGemPos(gem, aPos - 1);
+      }
+    }
+
+    // left
+    else if (diff === -1) {
+      // shift down
+      if (this._isTopEdge(aPos)) {
+        this._moveGemDown(anchor);
+        this._setGemPos(gem, aPos);
+      } else {
+        this._setGemPos(gem, aPos - this._cols);
+      }
+    }
+
+    // top
+    else {
+      // shift left
+      if (this._isRightEdge(aPos)) {
+        this._moveGemLeft(anchor);
+        this._setGemPos(gem, aPos);
+      } else {
+        this._setGemPos(gem, aPos + 1);
+      }
+    }
   }
 
-  _rotateGemACW(gem, point) {
-    if (gem.pos() - point === -1) {
-      return this._setGemPos(gem, gem.pos() + this._cols + 1);
+  _rotateGemACW(gem, anchor) {
+    const gPos = gem.pos();
+    const aPos = anchor.pos();
+    const diff = gPos - aPos;
+
+    // left
+    if (diff === -1) {
+      return this._setGemPos(gem, aPos + this._cols);
     }
 
-    return this._setGemPos(gem, gem.pos() - this._cols + 1);
+    // bottom
+    else if (diff === this._cols) {
+      // shift left
+      if (this._isRightEdge(aPos) || !this._isEmptyCell(aPos + 1)) {
+        this._moveGemLeft(anchor);
+        this._setGemPos(gem, aPos);
+      } else {
+        this._setGemPos(gem, aPos + 1);
+      }
+    }
+
+    // right
+    else if (diff === 1) {
+      // shift down
+      if (this._isTopEdge(aPos)) {
+        this._moveGemDown(anchor);
+        this._setGemPos(gem, aPos);
+      } else {
+        this._setGemPos(gem, aPos - this._cols);
+      }
+    }
+
+    // top
+    else {
+      // shift right
+      if (this._isLeftEdge(aPos)) {
+        this._moveGemRight(anchor);
+        this._setGemPos(gem, aPos);
+      } else {
+        this._setGemPos(gem, aPos - 1);
+      }
+    }
   }
 
   _setGemPos(gem, pos) {
@@ -490,5 +563,17 @@ export class Game {
 
   _isSameRow(i1, i2) {
     return Math.floor(i1 / this._cols) === Math.floor(i2 / this._cols);
+  }
+
+  _isRightEdge(pos) {
+    return (pos + 1) % this._cols === 0;
+  }
+
+  _isLeftEdge(pos) {
+    return pos % this._cols === 0;
+  }
+
+  _isTopEdge(pos) {
+    return pos < this._cols;
   }
 }

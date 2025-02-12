@@ -313,4 +313,43 @@ describe('Game', () => {
       ])
     );
   });
+
+  it('rotation should cause a shift', () => {
+    const game = createGame();
+
+    [
+      ['RG', 'RRAAAAAA'],
+      ['BG', 'LLLAAAAAA'],
+      ['YG', 'LLLBBBBR'],
+      ['YG', 'RRBBBBRABBR'],
+      ['RR', 'L'],
+      ['RR', 'L'],
+      ['RR', 'L'],
+      ['RR', 'L'],
+      ['RR', 'L'],
+      ['BY', 'BBAAA'],
+      ['BB', 'R'],
+      ['BB', 'R'],
+      ['BB', 'R'],
+      ['BB', 'R'],
+      ['BY', 'BBAAA'],
+    ].forEach((inst) => game.exec(inst));
+
+    expect(game.getStateStr()).toBe(
+      createStateStr([
+        '  R B ',
+        '  R B ',
+        '  R B ',
+        '  R B ',
+        '  R B ',
+        '  R B ',
+        '  R B ',
+        '  R B ',
+        '  R B ',
+        '  R G ',
+        ' GYBGY',
+        ' BGYRY',
+      ])
+    );
+  });
 });
