@@ -133,10 +133,6 @@ function parseCommands() {
 
       moves = moves.replace(/[^LRAB]/g, '').toUpperCase();
 
-      if (!moves.length) {
-        return;
-      }
-
       commands.push([gems, moves]);
     });
 }
