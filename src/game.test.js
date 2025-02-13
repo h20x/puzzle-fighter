@@ -15,9 +15,9 @@ describe('Game', () => {
     return new Game(ncols, nrows);
   }
 
-  function runTest(instuctions, state, pgems) {
+  function runTest(instructions, state, pgems) {
     const game = createGame();
-    instuctions.forEach((inst) => game.exec(inst));
+    instructions.forEach((inst) => game.exec(inst));
     expect(game.getStateStr()).toBe(createStateStr(state));
 
     if (pgems) {
