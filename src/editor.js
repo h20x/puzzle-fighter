@@ -68,6 +68,7 @@ function reset() {
 function lastCmd() {
   while (cp < commands.length) {
     history = game.exec(commands[cp++]);
+    history.length && field.render(history[history.length - 1]);
   }
 
   hp = history.length - 1;
@@ -84,14 +85,13 @@ function lastCmd() {
 
 function nextCmd() {
   if (cp >= commands.length) {
-    return;
-  }
-
+    hp = history.length - 1;
+    history.length && field.render(history[hp]);
+  } else {
+    history.length && field.render(history[history.length - 1]);
   hp = 0;
   history = game.exec(commands[cp++]);
-
-  if (history.length) {
-    field.render(history[hp]);
+    history.length && field.render(history[hp]);
   }
 
   updateCommandList();
