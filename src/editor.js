@@ -1,9 +1,6 @@
 import { Game } from './game.js';
 import { Field } from './field.js';
 
-const cols = 6;
-const rows = 12;
-
 const commands = restoreCommands();
 let cp = 0;
 
@@ -50,8 +47,12 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-let game = new Game(cols, rows);
-const field = new Field(cols, rows, document.getElementById('field'));
+let game = new Game();
+const field = new Field(
+  game.cols(),
+  game.rows(),
+  document.getElementById('field')
+);
 
 field.render();
 nextCmd();
@@ -59,7 +60,7 @@ nextCmd();
 function reset() {
   cp = hp = 0;
   history = [];
-  game = new Game(cols, rows);
+  game = new Game();
   parseCommands();
   saveCommands();
   nextCmd();
@@ -73,10 +74,6 @@ function lastCmd() {
 
   hp = history.length - 1;
 
-  if (history.length) {
-    field.render(history[hp]);
-  }
-
   updateCommandList();
   updateControls();
 
@@ -89,8 +86,8 @@ function nextCmd() {
     history.length && field.render(history[hp]);
   } else {
     history.length && field.render(history[history.length - 1]);
-  hp = 0;
-  history = game.exec(commands[cp++]);
+    hp = 0;
+    history = game.exec(commands[cp++]);
     history.length && field.render(history[hp]);
   }
 

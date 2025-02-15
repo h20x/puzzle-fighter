@@ -2,14 +2,26 @@ import { Gem, PowerGem } from './gem.js';
 
 const gemTypes = new Set(['R', 'G', 'B', 'Y', 'r', 'g', 'b', 'y', '0']);
 
+const COLS = 6;
+const ROWS = 12;
+const OFFSET = 3;
+
 export class Game {
-  constructor(cols, rows, gemOffset = 3) {
+  constructor(cols = COLS, rows = ROWS, gemOffset = OFFSET) {
     this._cols = cols;
     this._rows = rows;
     this._gemOffset = gemOffset;
     this._field = new Array(cols * rows).fill(null);
     this._gems = [];
     this._history = [];
+  }
+
+  cols() {
+    return this._cols;
+  }
+
+  rows() {
+    return this._rows;
   }
 
   exec(inst) {
@@ -95,35 +107,27 @@ export class Game {
         console.error(`Instruction: ${inst}. ${err.message}`);
       }
     });
+
     gems.sort((a, b) => a.pos() - b.pos());
   }
 
   _handleMoveInst(pair, cmd) {
-    switch (cmd) {
-      case 'L':
-        pair
-          .slice()
-          .sort((a, b) => a.pos() - b.pos())
-          .forEach((gem) => this._moveGemLeft(gem));
-        break;
-
-      case 'R':
-        pair
-          .slice()
-          .sort((a, b) => b.pos() - a.pos())
-          .forEach((gem) => this._moveGemRight(gem));
-        break;
-
-      case 'A':
-        this._rotateGemACW(pair[1], pair[0]);
-        break;
-
-      case 'B':
-        this._rotateGemCW(pair[1], pair[0]);
-        break;
-
-      default:
-        throw new Error(`Bad move: ${cmd}`);
+    if ('L' === cmd) {
+      pair
+        .slice()
+        .sort((a, b) => a.pos() - b.pos())
+        .forEach((gem) => this._moveGemLeft(gem));
+    } else if ('R' === cmd) {
+      pair
+        .slice()
+        .sort((a, b) => b.pos() - a.pos())
+        .forEach((gem) => this._moveGemRight(gem));
+    } else if ('A' === cmd) {
+      this._rotateGemACW(pair[1], pair[0]);
+    } else if ('B' === cmd) {
+      this._rotateGemCW(pair[1], pair[0]);
+    } else {
+      throw new Error(`Bad move: ${cmd}`);
     }
   }
 
@@ -387,11 +391,7 @@ export class Game {
       this._expandPowerGemRight(powerGem);
       this._expandPowerGemBottom(powerGem);
       this._updateHistory();
-
-      return true;
     }
-
-    return false;
   }
 
   _expandPowerGems() {

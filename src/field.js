@@ -6,7 +6,7 @@ export class Field {
     this._field = null;
   }
 
-  render(gems) {
+  render(gems = []) {
     if (!this._field) {
       this._field = document.createElement('div');
       this._field.classList.add('field');
@@ -18,7 +18,7 @@ export class Field {
     this._field.innerHTML = this._createHTML(gems);
   }
 
-  _createHTML(gems = []) {
+  _createHTML(gems) {
     let html = '';
 
     html += `<div class="scale">

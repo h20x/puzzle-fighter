@@ -1,24 +1,19 @@
 import { Game } from './game';
 
 describe('Game', () => {
-  const ncols = 6;
-  const nrows = 12;
-
-  function createStateStr(rows) {
+  function createStateStr(rows, nrows, ncols) {
     const state = new Array(nrows - rows.length).fill(' '.repeat(ncols));
     rows.forEach((row) => state.push(row.padEnd(ncols, ' ')));
 
     return state.join('\n');
   }
 
-  function createGame() {
-    return new Game(ncols, nrows);
-  }
-
   function runTest(instructions, state, pgems) {
-    const game = createGame();
+    const game = new Game();
     instructions.forEach((inst) => game.exec(inst));
-    expect(game.getStateStr()).toBe(createStateStr(state));
+    expect(game.getStateStr()).toBe(
+      createStateStr(state, game.rows(), game.cols())
+    );
 
     if (pgems) {
       expect(game.getPowerGems()).toEqual(pgems);
