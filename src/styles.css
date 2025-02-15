@@ -53,6 +53,11 @@ body {
   content: counter(n);
 }
 
+.scale-item:nth-child(1)::before,
+.scale-item:nth-child(2)::before {
+  display: none;
+}
+
 .hlines,
 .vlines {
   display: flex;

@@ -86,6 +86,14 @@ export class PowerGem {
     return this._height;
   }
 
+  area() {
+    return this._width * this._height;
+  }
+
+  row() {
+    return Math.floor(this.pos() / this._fieldWidth);
+  }
+
   clone() {
     const gems = this._gems.map((gem) => gem.clone());
     const powerGem = new PowerGem(this._fieldWidth, gems);
@@ -130,19 +138,11 @@ export class PowerGem {
       return false;
     }
 
-    if (
-      dir === 'H' &&
-      (pgem.pos() !== this.pos() + this.width() ||
-        pgem.height() !== this.height())
-    ) {
+    if (dir === 'H' && !this._canMergeHor(pgem)) {
       return false;
     }
 
-    if (
-      dir === 'V' &&
-      (pgem.pos() !== this.pos() + this._fieldWidth * this.height() ||
-        pgem.width() !== this.width())
-    ) {
+    if (dir === 'V' && !this._canMergeVer(pgem)) {
       return false;
     }
 
@@ -166,6 +166,25 @@ export class PowerGem {
 
   isSimple() {
     return false;
+  }
+
+  _canMergeHor(pgem) {
+    const isNeighbour =
+      pgem.pos() + pgem.width() === this.pos() ||
+      this.pos() + this.width() === pgem.pos();
+
+    return (
+      isNeighbour &&
+      pgem.row() === this.row() &&
+      pgem.height() === this.height()
+    );
+  }
+
+  _canMergeVer(pgem) {
+    return (
+      pgem.pos() === this.pos() + this._fieldWidth * this.height() &&
+      pgem.width() === this.width()
+    );
   }
 
   _canConsume(gem) {

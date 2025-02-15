@@ -3,7 +3,7 @@ import { Gem, PowerGem } from './gem.js';
 const gemTypes = new Set(['R', 'G', 'B', 'Y', 'r', 'g', 'b', 'y', '0']);
 
 const COLS = 6;
-const ROWS = 12;
+const ROWS = 14;
 const OFFSET = 3;
 
 export class Game {
@@ -14,6 +14,7 @@ export class Game {
     this._field = new Array(cols * rows).fill(null);
     this._gems = [];
     this._history = [];
+    this._isStopped = false;
   }
 
   cols() {
@@ -25,14 +26,22 @@ export class Game {
   }
 
   exec(inst) {
-    if (!this._checkEmptyCells()) {
-      return this._history.slice();
+    if (this._isStopped) {
+      return [];
     }
 
     this._clearHistory();
     const gems = this._createGems(inst);
     this._moveGems(inst, gems);
     this._landGems(gems);
+
+    if (this._isOutOfGameArea(this._gems[0].pos())) {
+      this._isStopped = true;
+      this._destroyGems(new Set(gems));
+
+      return [];
+    }
+
     this._handleAllGems();
 
     return this._history.slice();
@@ -52,7 +61,7 @@ export class Game {
       state.push(str);
     }
 
-    return state.join('\n');
+    return state.slice(2).join('\n');
   }
 
   getPowerGems() {
@@ -67,12 +76,6 @@ export class Game {
     }
 
     return [...map];
-  }
-
-  _checkEmptyCells() {
-    return [this._gemOffset, this._cols + this._gemOffset].every((i) =>
-      this._isEmptyCell(i)
-    );
   }
 
   _createGems(inst) {
@@ -164,7 +167,7 @@ export class Game {
     // bottom
     else if (diff === this._cols) {
       // shift right
-      if (this._isLeftEdge(aPos) || !this._isEmptyCell(aPos - 1)) {
+      if (this._isLeftEdge(aPos)) {
         this._moveGemRight(anchor);
         this._setGemPos(gem, aPos);
       } else {
@@ -208,7 +211,7 @@ export class Game {
     // bottom
     else if (diff === this._cols) {
       // shift left
-      if (this._isRightEdge(aPos) || !this._isEmptyCell(aPos + 1)) {
+      if (this._isRightEdge(aPos)) {
         this._moveGemLeft(anchor);
         this._setGemPos(gem, aPos);
       } else {
@@ -280,21 +283,28 @@ export class Game {
   }
 
   _handleAllGems() {
-    for (let i = 0; i < this._gems.length; ++i) {
-      const gem = this._gems[i];
+    let repeat;
 
-      if (gem.isCrash() && this._handleCrashGem(gem)) {
-        i = -1;
+    do {
+      repeat = false;
+
+      for (const gem of this._gems) {
+        if (gem.isCrash() && this._handleCrashGem(gem)) {
+          repeat = true;
+        }
+
+        if (gem.isRainbow()) {
+          this._handleRainbowGem(gem);
+          repeat = true;
+        }
+
+        if (gem.isSimple()) {
+          this._formPowerGem(gem);
+        }
       }
 
-      if (gem.isRainbow() && this._handleRainbowGem(gem)) {
-        i = -1;
-      }
-
-      if (gem.isSimple()) {
-        this._formPowerGem(gem);
-      }
-    }
+      this._landGems(this._gems);
+    } while (repeat);
 
     this._expandPowerGems();
     this._mergePowerGems();
@@ -305,7 +315,6 @@ export class Game {
 
     if (gemsToDestroy.size > 1) {
       this._destroyGems(gemsToDestroy);
-      this._landGems(this._gems);
 
       return true;
     }
@@ -352,20 +361,23 @@ export class Game {
   }
 
   _handleRainbowGem(rgem) {
-    const gemBelow = this._at(rgem.pos() + this._cols);
+    const gemsToDestroy = new Set([rgem]);
+    let gemBelow = this._at(rgem.pos() + this._cols);
 
-    if (gemBelow) {
-      const gemsToDestroy = this._gems.filter(
-        (g) => g.color() === gemBelow.color()
-      );
-      gemsToDestroy.push(rgem);
-      this._destroyGems(new Set(gemsToDestroy));
-      this._landGems(this._gems);
-
-      return true;
+    if (gemBelow && gemBelow.isRainbow()) {
+      gemsToDestroy.add(gemBelow);
+      gemBelow = this._at(gemBelow.pos() + this._cols);
     }
 
-    return false;
+    if (gemBelow) {
+      for (const gem of this._gems) {
+        if (gem.color() === gemBelow.color()) {
+          gemsToDestroy.add(gem);
+        }
+      }
+    }
+
+    this._destroyGems(gemsToDestroy);
   }
 
   _formPowerGem(gem) {
@@ -410,14 +422,14 @@ export class Game {
   }
 
   _expandPowerGem(pgem) {
-    const size = pgem.height() * pgem.width();
+    const area = pgem.area();
 
     this._expandPowerGemLeft(pgem);
     this._expandPowerGemRight(pgem);
     this._expandPowerGemTop(pgem);
     this._expandPowerGemBottom(pgem);
 
-    if (size !== pgem.height() * pgem.width()) {
+    if (area !== pgem.area()) {
       this._updateHistory();
     }
   }
@@ -494,12 +506,19 @@ export class Game {
   }
 
   _mergePowerGem(pgem) {
-    const size = pgem.height() * pgem.width();
+    const oldArea = pgem.area();
+    let area;
 
-    while (pgem.merge('H', this._at(pgem.pos() + pgem.width())));
-    while (pgem.merge('V', this._at(pgem.pos() + this._cols * pgem.height())));
+    do {
+      area = pgem.area();
+      while (pgem.merge('H', this._at(pgem.pos() - 1)));
+      while (pgem.merge('H', this._at(pgem.pos() + pgem.width())));
+      while (
+        pgem.merge('V', this._at(pgem.pos() + this._cols * pgem.height()))
+      );
+    } while (area !== pgem.area());
 
-    if (size !== pgem.height() * pgem.width()) {
+    if (oldArea !== pgem.area()) {
       this._updateHistory();
     }
   }
@@ -575,5 +594,9 @@ export class Game {
 
   _isTopEdge(pos) {
     return pos < this._cols;
+  }
+
+  _isOutOfGameArea(pos) {
+    return pos < this._cols * 2;
   }
 }
